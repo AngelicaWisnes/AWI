@@ -67,16 +67,13 @@ Add-ToFunctionList -category "Git" -name 'gb' -value 'Get current git branch'
 
 
 function Get-MasterBranch { 
-  $command = 'git symbolic-ref --short refs/remotes/origin/HEAD'
-  $output = & cmd /c $command | ForEach-Object { $_.Trim() }
-
-  return [System.IO.Path]::GetFileName($output) 
+  $output = git symbolic-ref --short refs/remotes/origin/HEAD 2>$null
+  if ($output) { return [System.IO.Path]::GetFileName($output.Trim()) } 
+  else { return Write-Host "Failed to retrieve master branch." }
 }
 Set-Alias gmb Get-MasterBranch
 Add-ToFunctionList -category "Git" -name 'gmb' -value 'Get git master branch'
 
-
-function Get-TotalLineCountInRepo { git ls-files | grep '\.ps1' | xargs wc -l }
 
 function Get-TotalLineCountInRepo { git diff --stat $(git hash-object -t tree /dev/null) }
 Set-Alias glc Get-TotalLineCountInRepo
