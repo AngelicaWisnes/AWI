@@ -1,6 +1,6 @@
 
 $AWI_profile = (Resolve-Path "$PSScriptRoot\..\AWI.ps1").Path
-$AWI_import_statement = "`n# Import AWI package`n. $AWI_profile`n"
+$AWI_import_statement = "`n# Import AWI package`n. (Resolve-Path `"$AWI_profile`")`n"
 $psCommand = "Add-Content -Path `$PROFILE.CurrentUserCurrentHost -Value '$AWI_import_statement' -Encoding utf8"
 $psScriptBlock = [scriptblock]::Create($psCommand)
 

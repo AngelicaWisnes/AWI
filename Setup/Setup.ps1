@@ -19,22 +19,22 @@ function logTime {
 #################################################
 
 $sw.Start()
-. $global:AWI\FunctionListGenerator\FunctionListGenerator.ps1
+. (Resolve-Path "$global:AWI/FunctionListGenerator/FunctionListGenerator.ps1")
 logTime "Import FunctionListGenerator"
 
-. $global:AWI\Constants\Constants.ps1
+. (Resolve-Path "$global:AWI/Constants/Constants.ps1")
 logTime "Import Constants"
 
-. $global:AWI\Functions\Functions.ps1
+. (Resolve-Path "$global:AWI/Functions/Functions.ps1")
 logTime "Import Functions"
 
-#. $global:AWI\Installer\Installer.ps1
+#. (Resolve-Path "$global:AWI/Installer/Installer.ps1")
 #logTime "Import Installer"
 
-. $global:AWI\Logo\Logo.ps1
+. (Resolve-Path "$global:AWI/Logo/Logo.ps1")
 logTime "Import Logo"
 
-. $global:AWI\SystemDependent\SystemDependentSetup.ps1
+. (Resolve-Path "$global:AWI/SystemDependent/SystemDependentSetup.ps1")
 logTime "Import SystemDependent"
 
 # Import modules
