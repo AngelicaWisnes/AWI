@@ -250,7 +250,10 @@ Set-Alias qca GitQuickCommitAll
 Add-ToFunctionList -category "Git" -name 'qca' -value 'Quick-Commit all'
 
 
-function Get-GitStatusStandard { git status }
+function Get-GitStatusStandard { 
+  git fetch
+  git status 
+}
 Set-Alias s Get-GitStatusStandard
 Add-ToFunctionList -category "Git" -name 's' -value 'git status'
 
