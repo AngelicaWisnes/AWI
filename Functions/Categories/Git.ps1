@@ -119,6 +119,15 @@ Set-Alias gd GitDeleteCurrentBranch
 Add-ToFunctionList -category "Git" -name 'gd' -value 'Delete current branch (local&remote)'
 
 
+function GitMergeCurrentIntoMaster { 
+  $currentBranch = Get-CurrentGitBranch
+  GitCheckoutMaster
+  git merge $currentBranch 
+}
+Set-Alias gmc GitMergeCurrentIntoMaster
+Add-ToFunctionList -category "Git" -name 'gmc' -value 'git merge current into master'
+
+
 function GitMergeArgs { git merge $args }
 Set-Alias gme GitMergeArgs
 Add-ToFunctionList -category "Git" -name 'gme' -value 'git merge args'
