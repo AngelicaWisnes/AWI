@@ -129,7 +129,7 @@ Add-ToFunctionList -category "Git" -name 'gmc' -value 'git merge current into ma
 
 
 function GitMergeArgs { git merge $args }
-Set-Alias gme GitMergeArgs
+Set-Alias gma GitMergeArgs
 Add-ToFunctionList -category "Git" -name 'gme' -value 'git merge args'
 
 
