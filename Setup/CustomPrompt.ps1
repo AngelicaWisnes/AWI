@@ -32,9 +32,10 @@ function Get-GitStatusInformation {
 
   if ($statusLength -gt 0) {
     $branchAndCommitInfo = $gitStatusInformation[0]
-    
-    $localBranch = ($branchAndCommitInfo -replace '^## (\S+)\.\.\..*', '$1').Trim()
-    $upstreamBranch = ($branchAndCommitInfo -replace '^## \S+\.\.\.(\S+).*', '$1').Trim()
+
+    $localBranch = [regex]::Match($branchAndCommitInfo, '(?<=^## )(\S+?)(?=\.\.\.|$| )').Groups[1].Value.Trim()
+    $upstreamBranch = [regex]::Match($branchAndCommitInfo, '^## \S+\.\.\.(\S+).*').Groups[1].Value.Trim()
+    $upstreamBranch = if ( -not $upstreamBranch ) { "<NoUpstreamSet>" } else { $upstreamBranch -replace "$localBranch$", '' }
     
     $commitsToPush = if ($branchAndCommitInfo -match 'ahead (\d+)') { $matches[1] } else { "0" }
     $commitsToPull = if ($branchAndCommitInfo -match 'behind (\d+)') { $matches[1] } else { "0" }
@@ -97,7 +98,6 @@ function Get-GitPrompt {
   #Get-GitPromptPrefix
   
   # Git branch information
-  $upstreamBranch = if ( -not $upstreamBranch ) { "<NoUpstreamSet>" } else { $upstreamBranch -replace "$localBranch$", '' }
   [void]$sb.Append($GitUpstreamPrefix + $colorCyan + $upstreamBranch + $global:RESET_SEQUENCE)
   [void]$sb.Append($GitUpstreamPostfix + $colorCyan + $localBranch + $global:RESET_SEQUENCE)
   
