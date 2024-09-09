@@ -13,91 +13,116 @@ $GitPromptPostfix = "{0} ] {1}" -f $colorYellow, $global:RESET_SEQUENCE
 $GitUpstreamPrefix = "{0}({1}" -f $colorDodgerBlue, $global:RESET_SEQUENCE
 $GitUpstreamPostfix = "{0}){1}" -f $colorDodgerBlue, $global:RESET_SEQUENCE
 
+$upArrow = [char]0x2191  # Up arrow
+$downArrow = [char]0x2193  # Down arrow
+$checkmark = [char]0x2714  # Checkmark
+$warning = [char]0x26A0  # Warning sign
+
+
 function Get-FormattedPath { 
   $pathDivider = [System.IO.Path]::DirectorySeparatorChar
   $formattedPath = ($pwd.Path -replace '.*Source', "${pathDivider}Source") 
   Return $formattedPath
 }
 
-function Get-GitUncommittedFileCount {
-  param (
-    [Parameter(Mandatory)][string]$gitStatus,
-    [Parameter(Mandatory)][string]$statusCode,
-    [Parameter(Mandatory)][int]$searchIndex
-  )
-  Return ($gitStatus | Where-Object { $_[$searchIndex] -eq $statusCode }).Count
+
+function Get-GitStatusInformation {
+  $gitStatusInformation = (git status --porcelain --branch --untracked-files=all 2>$null) -split "`n"
+  $statusLength = $gitStatusInformation.Length
+  
+  if ($statusLength -gt 0) {
+    $branchAndCommitInfo = $gitStatusInformation[0]
+    
+    $localBranch = ($branchAndCommitInfo -replace '^## (\S+)\.\.\..*', '$1').Trim()
+    $upstreamBranch = ($branchAndCommitInfo -replace '^## \S+\.\.\.(\S+).*', '$1').Trim()
+    
+    $commitsToPush = if ($branchAndCommitInfo -match 'ahead (\d+)') { $matches[1] } else { "0" }
+    $commitsToPull = if ($branchAndCommitInfo -match 'behind (\d+)') { $matches[1] } else { "0" }
+    
+    $gitStatusList = $gitStatusInformation | Select-Object -Skip 1
+    $stagedStatus, $unstagedStatus = Get-GitStatusCounters -gitStatusList $gitStatusList
+
+    Return @($upstreamBranch, $localBranch, $commitsToPull, $commitsToPush, $stagedStatus, $unstagedStatus)
+  }
+
+  Return $null
 }
 
+
 function Get-GitStatusCounters {
-  $statusList = @(
-    @{ 'A' = 0; 'M' = 0; 'D' = 0 } # For staged changes
-    @{ '?' = 0; 'M' = 0; 'D' = 0 } # For unstaged changes
-  )
+  param ( [Parameter(Mandatory)][string[]]$gitStatusList )
+
+  $stagedStatus = @{'+'=0; '~'=0; '-'=0}
+  $unstagedStatus = @{'+'=0; '~'=0; '-'=0}
   
-  $gitStatus = git status --porcelain
-  
-  foreach ($line in $gitStatus -split "`n") {
+  foreach ($line in $gitStatusList) {
     if ($line.Length -ge 2) {
       $stagedStatusCode = [string]$line[0]
       $unstagedStatusCode = [string]$line[1]
+
+      switch ($stagedStatusCode) {
+        'A' { $stagedStatus['+']++ }
+        'M' { $stagedStatus['~']++ }
+        'T' { $stagedStatus['~']++ }
+        'R' { $stagedStatus['~']++ }
+        'C' { $stagedStatus['~']++ }
+        'D' { $stagedStatus['-']++ }
+      }
       
-      if ($statusList[0].ContainsKey($stagedStatusCode)) { $statusList[0][$stagedStatusCode]++ }
-      if ($statusList[1].ContainsKey($unstagedStatusCode)) { $statusList[1][$unstagedStatusCode]++ } 
+      switch ($unstagedStatusCode) {
+        '?' { $unstagedStatus['+']++ }
+        'M' { $unstagedStatus['~']++ }
+        'T' { $unstagedStatus['~']++ }
+        'R' { $unstagedStatus['~']++ }
+        'C' { $unstagedStatus['~']++ }
+        'D' { $unstagedStatus['-']++ }
+      }
     }
   }
-  
-  return $statusList
+
+  Return @($stagedStatus, $unstagedStatus)
 }
 
 
 function Get-GitPrompt {
-  $isGitRepo = git rev-parse --is-inside-work-tree 2>$null
-  If (-not $isGitRepo) { Return }
-  
-  $sb = [System.Text.StringBuilder]::new()
-  
-  $upArrow = [char]0x2191  # Up arrow
-  $downArrow = [char]0x2193  # Down arrow
-  $checkmark = [char]0x2714  # Checkmark
-  $warning = [char]0x26A0  # Warning sign
-  
-  $statusList = Get-GitStatusCounters -gitStatus $gitStatus
+  $gitStatusInformation = Get-GitStatusInformation
+  If (-not $gitStatusInformation) { Return }
+
+  $upstreamBranch, $localBranch, $commitsToPull, $commitsToPush, $stagedStatus, $unstagedStatus = $gitStatusInformation
+
+  $sb = [System.Text.StringBuilder]::new()  
   
   # GitPrompt Prefix
   [void]$sb.Append($GitPromptPrefix)
   #Get-GitPromptPrefix
   
   # Git branch information
-  $localBranch = git rev-parse --abbrev-ref HEAD 2>$null
-  $upstreamBranch = git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>$null
   $upstreamBranch = if ( -not $upstreamBranch ) { "<NoUpstreamSet>" } else { $upstreamBranch -replace "$localBranch$", '' }
   [void]$sb.Append($GitUpstreamPrefix + $colorCyan + $upstreamBranch + $global:RESET_SEQUENCE)
   [void]$sb.Append($GitUpstreamPostfix + $colorCyan + $localBranch + $global:RESET_SEQUENCE)
   
   # GitPrompt Pull information
-  $commitsToPull = (git cherry -v HEAD '@{u}').count 2>$null
   If ( $commitsToPull -gt 0 ) { 
     [void]$sb.Append($GitPromptInfix + $colorDeepPink + $downArrow + " " + $commitsToPull + $global:RESET_SEQUENCE)
   }
     
   # GitPrompt Push information
-  $commitsToPush = (git cherry -v '@{u}').count 2>$null
   If ( $commitsToPush -gt 0 ) { 
     [void]$sb.Append($GitPromptInfix + $colorLightSlateBlue + $upArrow + " " + $commitsToPush + $global:RESET_SEQUENCE)
   }
       
   # GitPrompt Staged information
-  $stagedAdded = $statusList[0]['A']
-  $stagedChanged = $statusList[0]['M']
-  $stagedDeleted = $statusList[0]['D']
+  $stagedAdded = $stagedStatus['+']
+  $stagedChanged = $stagedStatus['~']
+  $stagedDeleted = $stagedStatus['-']
   If ( ($stagedAdded -gt 0) -or ($stagedChanged -gt 0) -or ($stagedDeleted -gt 0) ) { 
     [void]$sb.Append($GitPromptInfix + $colorMintGreen + $checkmark + " +" + $stagedAdded + " ~" + $stagedChanged + " -" + $stagedDeleted + $global:RESET_SEQUENCE)
   }
         
   # GitPrompt Unstaged information
-  $unstagedAdded = $statusList[1]['?']
-  $unstagedChanged = $statusList[1]['M']
-  $unstagedDeleted = $statusList[1]['D']
+  $unstagedAdded = $unstagedStatus['+']
+  $unstagedChanged = $unstagedStatus['~']
+  $unstagedDeleted = $unstagedStatus['-']
   If ( ($unstagedAdded -gt 0) -or ($unstagedChanged -gt 0) -or ($unstagedDeleted -gt 0) ) { 
     [void]$sb.Append($GitPromptInfix + $colorMonaLisa + $warning + " +" + $unstagedAdded + " ~" + $unstagedChanged + " -" + $unstagedDeleted + $global:RESET_SEQUENCE)
   }
@@ -108,7 +133,7 @@ function Get-GitPrompt {
 }
 
 
-function Prompt {
+function prompt {
   $sb = [System.Text.StringBuilder]::new()
 
   # Prefix

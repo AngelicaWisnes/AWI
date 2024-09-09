@@ -92,18 +92,33 @@ Set-PSReadLineKeyHandler -Chord Ctrl+2 -ScriptBlock {
   [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
 }
 
-#function prompt {
-#  # Your non-prompt logic here
-#  #$prompt = Write-Prompt "Text before posh-git prompt " -ForegroundColor ([ConsoleColor]::Green)
-#  if (Get-Module -ListAvailable -Name posh-git) { Get-Command $GitPromptScriptBlock } else { write-host "false" }
-#
-#  $prompt = Write-Prompt "`n"
-#  
-#  $prompt += & $GitPromptScriptBlock
-#  #$prompt += "`n"
-#  
-#  $prompt.replace(">", "`n>")
-#
-#  #$prompt += Write-Prompt "Text after posh-git prompt" -ForegroundColor ([ConsoleColor]::Magenta)
-#  if ($prompt) { "$prompt " } else { "FAIL > " }
-#}
+# Utility-function to test speed of code, while developing
+function timeTesting {
+  $testingStopwatch = [Diagnostics.Stopwatch]::new()
+  $testingTimerLog = [System.Text.StringBuilder]::new()
+  function logTestingTime {
+    param( 
+      [Parameter(Mandatory)][String]$timed,
+      [bool]$restart = $true 
+    )
+    $testingStopwatch.Stop()
+    [void]$testingTimerLog.AppendFormat(" {1:0.000000}s - {0}`n", $timed, $($testingStopwatch.ElapsedMilliseconds / 1000))
+    $testingStopwatch.Reset()
+    If ($restart) { $testingStopwatch.Start() }
+  }
+
+
+  $testingStopwatch.Start()
+
+  "Log some code"
+  logTestingTime "Get git status"
+  
+  "Log some other code"
+  logTestingTime "Get localbranch"
+  
+  "Log some final code"
+  logTestingTime "Get-GitPrompt2" -restart $false
+
+  Write-Host -ForegroundColor Cyan $testingTimerLog.ToString()
+  [void]$testingTimerLog.Clear()
+}
