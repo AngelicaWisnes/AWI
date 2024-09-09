@@ -29,7 +29,7 @@ function Get-FormattedPath {
 function Get-GitStatusInformation {
   $gitStatusInformation = (git status --porcelain --branch --untracked-files=all 2>$null) -split "`n"
   $statusLength = $gitStatusInformation.Length
-  
+
   if ($statusLength -gt 0) {
     $branchAndCommitInfo = $gitStatusInformation[0]
     
@@ -39,7 +39,7 @@ function Get-GitStatusInformation {
     $commitsToPush = if ($branchAndCommitInfo -match 'ahead (\d+)') { $matches[1] } else { "0" }
     $commitsToPull = if ($branchAndCommitInfo -match 'behind (\d+)') { $matches[1] } else { "0" }
     
-    $gitStatusList = $gitStatusInformation | Select-Object -Skip 1
+    $gitStatusList = $gitStatusInformation[1..($statusLength - 1)]
     $stagedStatus, $unstagedStatus = Get-GitStatusCounters -gitStatusList $gitStatusList
 
     Return @($upstreamBranch, $localBranch, $commitsToPull, $commitsToPush, $stagedStatus, $unstagedStatus)
@@ -50,7 +50,7 @@ function Get-GitStatusInformation {
 
 
 function Get-GitStatusCounters {
-  param ( [Parameter(Mandatory)][string[]]$gitStatusList )
+  param ( [string[]]$gitStatusList )
 
   $stagedStatus = @{'+'=0; '~'=0; '-'=0}
   $unstagedStatus = @{'+'=0; '~'=0; '-'=0}
