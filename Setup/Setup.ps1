@@ -19,14 +19,14 @@ function logTime {
 #################################################
 
 $sw.Start()
+. (Resolve-Path "$global:AWI/Constants/Constants.ps1")
+logTime "Import Constants"
+
 . (Resolve-Path "$PSScriptRoot\CustomPrompt.ps1")
 logTime "Import CustomPrompt"
 
 . (Resolve-Path "$global:AWI/FunctionListGenerator/FunctionListGenerator.ps1")
 logTime "Import FunctionListGenerator"
-
-. (Resolve-Path "$global:AWI/Constants/Constants.ps1")
-logTime "Import Constants"
 
 . (Resolve-Path "$global:AWI/Functions/Functions.ps1")
 logTime "Import Functions"
