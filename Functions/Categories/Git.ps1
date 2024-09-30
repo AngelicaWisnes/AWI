@@ -42,7 +42,10 @@ Set-Alias cm GitCommitWithMessage
 Add-ToFunctionList -category "Git" -name 'cm' -value 'git commit -m'
 
 
-function GitCheckout { git checkout $args }
+function GitCheckout { 
+  param( [Parameter(Mandatory)][string]$argToCheckout )
+  git checkout $argToCheckout 
+}
 Set-Alias co GitCheckout
 Add-ToFunctionList -category "Git" -name 'co' -value 'git checkout args'
 
@@ -266,6 +269,61 @@ function Get-GitStatusStandard {
 Set-Alias s Get-GitStatusStandard
 Add-ToFunctionList -category "Git" -name 's' -value 'git status'
 
+
+function GitHandleBranches { 
+  OUT $(PE -txt:"Initiating branch handling:" -fg:$global:colors.Cyan), 
+  $(PE -txt:"`n`t[C] Checkout local branch" -fg:$global:colors.Cyan), 
+  $(PE -txt:"`n`t[D] Delete local branches that have been deleted from remote" -fg:$global:colors.Cyan), 
+  $(PE -txt:"`n`t[N] Create new local branch" -fg:$global:colors.Cyan), 
+  $(PE -txt:"`n`t[S] System dependent branch handling" -fg:$global:colors.Cyan), 
+  $(PE -txt:"`n`t[Any] Cancel" -fg:$global:colors.Yellow),
+  $(PE -txt:"`n`nEnter your choice: " -fg:$global:colors.Cyan) -NoNewline
+  
+  $userInput = $Host.UI.RawUI.ReadKey().Character
+  switch ($userInput.ToString().ToUpper()) {
+    "C" { GitChooseLocalBranch }
+    "D" { GitDeleteLocalBranchesDeletedFromRemote }
+    "N" { GitCreateNewBranch }
+    "S" { Get-SystemDependentGitCheckouts }
+    Default { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
+  }
+}
+Set-Alias ghb GitHandleBranches
+Add-ToFunctionList -category "Git" -name 'ghb' -value 'Git handle branches'
+
+
+function GitChooseLocalBranch { 
+  OUT $(PE -txt:"Initiating checkout local branch" -fg:$global:colors.Cyan)
+
+  $localBrancheNamesAsList = (git branch --format="%(refname:short)").Split("`n")
+  
+  For ($i = 0; $i -lt $localBrancheNamesAsList.length; $i++) { OUT $(PE -txt:"`t[$i] $($localBrancheNamesAsList[$i])" -fg:$global:colors.Cyan) -NoNewlineStart } 
+  OUT $(PE -txt:"`t[M] Enter branch name manually" -fg:$global:colors.Cyan),
+      $(PE -txt:"`n`t[Any] Cancel " -fg:$global:colors.Yellow),
+      $(PE -txt:"`n`nEnter your choice: " -fg:$global:colors.Cyan) -NoNewline -NoNewlineStart
+
+  $userInput = Read-Host 
+  If ($userInput.ToUpper() -eq "M") { GitCheckout }
+  ElseIf (($userInput.Length -gt 0) -and ($userInput -in 0..$($localBrancheNamesAsList.Length - 1))) { GitCheckout $localBrancheNamesAsList[$userInput] }
+  Else { OUT $(PE -txt:"Cancelling" -fg:$global:colors.Cyan) }
+}
+Set-Alias cob GitChooseLocalBranch
+Add-ToFunctionList -category "Git" -name 'cob' -value 'Git choose local branch'
+
+
+function GitDeleteLocalBranchesDeletedFromRemote { 
+  OUT $(PE -txt:"Initiating deletion of local branches that have been deleted from remote: " -fg:$global:colors.Cyan)
+  
+  git fetch --prune >$null
+  git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | awk '$2 == "[gone]" {print $1}'
+  
+  OUT $(PE -txt:"Continue deleting these branches from local [Y/N (Default)]: " -fg:$global:colors.Cyan) -NoNewline
+  $userInput = Read-Host 
+  If ($userInput.ToUpper() -eq "Y") { git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | awk '$2 == "[gone]" {print $1}' | xargs -r git branch -D }
+  Else { OUT $(PE -txt:"Cancelling" -fg:$global:colors.Cyan) }
+}
+Set-Alias dlb GitDeleteLocalBranchesDeletedFromRemote
+Add-ToFunctionList -category "Git" -name 'dlb' -value 'Git delete local branches deleted from remote'
 
 function Set-TokenizedRemoteURL { 
   OUT $(PE -txt:"`tGo to GitHub -> Profile -> Settings -> Developer Settings -> Personal access token, and generate a token. `n`tEnter token: ") -NoNewline

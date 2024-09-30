@@ -97,6 +97,9 @@ if (-not (Test-Path $sysDepRoot)) { Copy-TemplateDirectory }
 . $global:SYSTEM_PROJECTS_PATH
 . $global:SYSTEM_FUNCTIONS_PATH
 
+# Specify SystemDependentFunction-getters for general usage
+function Get-SystemDependentGitCheckouts { SystemDependentGitCheckouts }
+
 
 # Specify all relevant SystemDependentPaths:
 class SDP { [string]$variable ; [string]$name ; [string]$value ; [bool]$muted } 

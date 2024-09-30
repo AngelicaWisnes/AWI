@@ -8,7 +8,7 @@ function Confirm-Action {
     param( [Parameter(Mandatory)][String] $Prompt)
 
     $private:response = Read-Host "$Prompt - Do you want to proceed? [Y/N] (Default: Y)"
-    if ($private:response -eq 'Y' -or $private:response -eq 'y' -or $private:response -eq '') {
+    if ($private:response.ToUpper() -eq 'Y' -or $private:response -eq '') {
         Write-Host -ForegroundColor Cyan "Proceeding..."
         return $true
     }
