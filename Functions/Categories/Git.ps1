@@ -20,8 +20,8 @@ function GitCreateNewBranch {
   
   git checkout -b $branchName
 }
-Set-Alias b GitCreateNewBranch
-Add-ToFunctionList -category "Git" -name 'b' -value 'git checkout -b'
+Set-Alias gcb GitCreateNewBranch
+Add-ToFunctionList -category "Git" -name 'gcb' -value 'git checkout -b'
 
 
 function GitCommit { git commit }
@@ -288,8 +288,8 @@ function GitHandleBranches {
     Default { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
   }
 }
-Set-Alias ghb GitHandleBranches
-Add-ToFunctionList -category "Git" -name 'ghb' -value 'Git handle branches'
+Set-Alias b GitHandleBranches
+Add-ToFunctionList -category "Git" -name 'b' -value 'Git handle branches'
 
 
 function GitChooseLocalBranch { 
