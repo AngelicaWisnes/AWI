@@ -22,10 +22,6 @@ class PrintElement { [string]$text; [RGB]$foreground; [RGB]$background; }
 
 # Colors
 $global:colors = [ordered]@{
-    ModerateYellowGreen= [COLOR]@{ hex = "#00BB55"; rgb = [RGB]@{r = 0; g = 187; b = 85;}; };
-    StrongSpringGreen  = [COLOR]@{ hex = "#00CC66"; rgb = [RGB]@{r = 0; g = 204; b = 102;}; };
-    DarkSpringGreen    = [COLOR]@{ hex = "#00AA44"; rgb = [RGB]@{r = 0; g = 170; b = 68;}; };
-    
     # Light colors
     Red                = [COLOR]@{ hex = "#FF0000"; rgb = [RGB]@{r = 255; g = 0; b = 0;}; };
     Orange             = [COLOR]@{ hex = "#FF8000"; rgb = [RGB]@{r = 255; g = 128; b = 0;}; };
