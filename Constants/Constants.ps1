@@ -22,6 +22,10 @@ class PrintElement { [string]$text; [RGB]$foreground; [RGB]$background; }
 
 # Colors
 $global:colors = [ordered]@{
+    ModerateYellowGreen= [COLOR]@{ hex = "#00BB55"; rgb = [RGB]@{r = 0; g = 187; b = 85;}; };
+    StrongSpringGreen  = [COLOR]@{ hex = "#00CC66"; rgb = [RGB]@{r = 0; g = 204; b = 102;}; };
+    DarkSpringGreen    = [COLOR]@{ hex = "#00AA44"; rgb = [RGB]@{r = 0; g = 170; b = 68;}; };
+    
     # Light colors
     Red                = [COLOR]@{ hex = "#FF0000"; rgb = [RGB]@{r = 255; g = 0; b = 0;}; };
     Orange             = [COLOR]@{ hex = "#FF8000"; rgb = [RGB]@{r = 255; g = 128; b = 0;}; };
@@ -40,6 +44,7 @@ $global:colors = [ordered]@{
     MonaLisa           = [COLOR]@{ hex = "#FF8080"; rgb = [RGB]@{r = 255; g = 128; b = 128;}; };
     PinkRibbon         = [COLOR]@{ hex = "#FFC0CB"; rgb = [RGB]@{r = 255; g = 192; b = 203;}; };
     MintGreen          = [COLOR]@{ hex = "#80FF80"; rgb = [RGB]@{r = 128; g = 255; b = 128;}; };
+    Jade               = [COLOR]@{ hex = "#00BE64"; rgb = [RGB]@{r = 0; g = 190; b = 100;}; };
     LightSlateBlue     = [COLOR]@{ hex = "#8080FF"; rgb = [RGB]@{r = 128; g = 128; b = 255;}; };
     # Dark colors
     Maroon             = [COLOR]@{ hex = "#800000"; rgb = [RGB]@{r = 128; g = 0; b = 0;}; };

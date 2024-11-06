@@ -62,6 +62,42 @@ function ReloadPsProfile {
 Set-Alias rap ReloadPsProfile
 Add-ToFunctionList -category "PowerShell" -name '. rap' -value 'Reload PS-profile'
 
+function Get-SelectableFileTree {
+  param([string]$preSelection)
+
+  $Path = (Join-Path -Path (Get-Location) -ChildPath "src")
+  $global:folderPaths = @()
+
+  function Show-Tree {
+      param (
+          [string]$BasePath,
+          [ref]$Index,
+          [string]$Prefix = "",
+          [string]$RelativePath = ""
+      )
+
+      $folders = Get-ChildItem -Path $BasePath -Directory | Where-Object { $_.Name -ne "node_modules" }
+
+      foreach ($folder in $folders) {
+          $Index.Value++
+          $currentRelativePath = if ($RelativePath) { Join-Path -Path $RelativePath -ChildPath $folder.Name } else { $folder.Name }
+          $global:folderPaths += $currentRelativePath
+          If (-not $preSelection) {OUT $(PE -txt:$("  {0,4} {1}- {2}" -f $Index.Value, $Prefix, $folder.Name) -fg:$global:colors.Cyan) -NoNewlineStart}
+          Show-Tree -BasePath $folder.FullName -Index $Index -Prefix "$Prefix- " -RelativePath $currentRelativePath
+      }
+  }
+
+  $index = [ref]0
+  If (-not $preSelection) {OUT $(PE -txt:"Directory-tree:" -fg:$global:colors.Cyan)}
+  Show-Tree -BasePath $Path -Index $index
+  If (-not $preSelection) {OUT $(PE -txt:"Enter the number of the folder you want to select: " -fg:$global:colors.Cyan) -NoNewline}
+
+  $selection = If ($preSelection) {$preSelection} else {Read-Host}
+  if ($selection -le 0 -or $selection -gt $global:folderPaths.Count) { Write-Host "Invalid selection. Please try again." } 
+  
+  Return $global:folderPaths[$selection - 1]
+}
+Add-ToFunctionList -category "PowerShell" -name 'Get-SelectableFileTree' -value 'Get selectable file tree'
 
 function Get-FunctionDefinition {
   param( [Parameter(Mandatory)][String]$commandName )

@@ -50,6 +50,15 @@ Set-Alias co GitCheckout
 Add-ToFunctionList -category "Git" -name 'co' -value 'git checkout args'
 
 
+function GitRebase { 
+  param( [Parameter(Mandatory)][string]$argToRebase )
+  OUT $(PE -txt:"Initializing following:`n`tgit rebase $argToRebase" -fg:$global:colors.Cyan)
+  git rebase $argToRebase 
+}
+Set-Alias gra GitRebase
+Add-ToFunctionList -category "Git" -name 'gra' -value 'git rebase args'
+
+
 function GitCheckoutPrevious { git checkout - }
 Set-Alias co- GitCheckoutPrevious
 Add-ToFunctionList -category "Git" -name 'co-' -value 'git checkout -'
@@ -84,10 +93,11 @@ Add-ToFunctionList -category "Git" -name 'glc' -value 'Get total line count in r
 
 
 function GitCombinePreviousCommits {
+  git log -n 5
   OUT $(PE -txt:"Initiating 'git reset --soft <hash>' to combine all commits done after given hash
   `tPlease provide the commit-hash belonging to the last commit
   `tdone BEFORE the first commit you want to include in this process, according to git log
-  `tCommit-Hash: ") -NoNewline
+  `tCommit-Hash: " -fg:$global:colors.Cyan) -NoNewline
   
   $commitHash = Get-ColoredInput
   
@@ -273,6 +283,7 @@ Add-ToFunctionList -category "Git" -name 's' -value 'git status'
 function GitHandleBranches { 
   OUT $(PE -txt:"Initiating branch handling:" -fg:$global:colors.Cyan), 
   $(PE -txt:"`n`t[C] Checkout local branch" -fg:$global:colors.Cyan), 
+  $(PE -txt:"`n`t[R] Rebase local branch" -fg:$global:colors.Cyan), 
   $(PE -txt:"`n`t[D] Delete local branches that have been deleted from remote" -fg:$global:colors.Cyan), 
   $(PE -txt:"`n`t[N] Create new local branch" -fg:$global:colors.Cyan), 
   $(PE -txt:"`n`t[S] System dependent branch handling" -fg:$global:colors.Cyan), 
@@ -282,6 +293,7 @@ function GitHandleBranches {
   $userInput = $Host.UI.RawUI.ReadKey().Character
   switch ($userInput.ToString().ToUpper()) {
     "C" { GitChooseLocalBranch }
+    "R" { GitRebaseLocalBranch }
     "D" { GitDeleteLocalBranchesDeletedFromRemote }
     "N" { GitCreateNewBranch }
     "S" { Get-SystemDependentGitCheckouts }
@@ -293,7 +305,7 @@ Add-ToFunctionList -category "Git" -name 'b' -value 'Git handle branches'
 
 
 function GitChooseLocalBranch { 
-  OUT $(PE -txt:"Initiating checkout local branch" -fg:$global:colors.Cyan)
+  OUT $(PE -txt:"Initiating checkout local branch:" -fg:$global:colors.Cyan)
 
   $localBrancheNamesAsList = (git branch --format="%(refname:short)").Split("`n")
   
@@ -302,28 +314,93 @@ function GitChooseLocalBranch {
       $(PE -txt:"`n`t[Any] Cancel " -fg:$global:colors.Yellow),
       $(PE -txt:"`n`nEnter your choice: " -fg:$global:colors.Cyan) -NoNewline -NoNewlineStart
 
-  $userInput = Read-Host 
+  $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
   If ($userInput.ToUpper() -eq "M") { GitCheckout }
   ElseIf (($userInput.Length -gt 0) -and ($userInput -in 0..$($localBrancheNamesAsList.Length - 1))) { GitCheckout $localBrancheNamesAsList[$userInput] }
-  Else { OUT $(PE -txt:"Cancelling" -fg:$global:colors.Cyan) }
+  Else { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
 }
 Set-Alias cob GitChooseLocalBranch
 Add-ToFunctionList -category "Git" -name 'cob' -value 'Git choose local branch'
+
+
+function GitRebaseLocalBranch { 
+  OUT $(PE -txt:"Initiating rebase local branch:" -fg:$global:colors.Cyan)
+
+  $localBrancheNamesAsList = (git branch --format="%(refname:short)").Split("`n")
+  
+  For ($i = 0; $i -lt $localBrancheNamesAsList.length; $i++) { OUT $(PE -txt:"`t[$i] $($localBrancheNamesAsList[$i])" -fg:$global:colors.Cyan) -NoNewlineStart } 
+  OUT $(PE -txt:"`t[M] Enter branch name manually" -fg:$global:colors.Cyan),
+      $(PE -txt:"`n`t[Any] Cancel " -fg:$global:colors.Yellow),
+      $(PE -txt:"`n`nEnter your choice: " -fg:$global:colors.Cyan) -NoNewline -NoNewlineStart
+
+  $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
+  If ($userInput.ToUpper() -eq "M") { GitRebase }
+  ElseIf (($userInput.Length -gt 0) -and ($userInput -in 0..$($localBrancheNamesAsList.Length - 1))) { GitRebase $($localBrancheNamesAsList[$userInput]) }
+  Else { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
+}
+Set-Alias rlb GitRebaseLocalBranch
+Add-ToFunctionList -category "Git" -name 'rlb' -value 'Git rebase local branch'
 
 
 function GitDeleteLocalBranchesDeletedFromRemote { 
   OUT $(PE -txt:"Initiating deletion of local branches that have been deleted from remote: " -fg:$global:colors.Cyan)
   
   git fetch --prune >$null
-  git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | awk '$2 == "[gone]" {print $1}'
+
+  OUT $(PE -txt:"These are the remote deleted branches:" -fg:$global:colors.Cyan)
+  $branches = git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | awk '$2 == "[gone]" {print $1}'
   
+  if ($branches.length -eq 0) { Return OUT $(PE -txt:"`n`tNone" -fg:$global:colors.Cyan) }
+
+  OUT $(PE -txt:"$branches" -fg:$global:colors.Cyan) -NoNewlineStart
+
   OUT $(PE -txt:"Continue deleting these branches from local [Y/N (Default)]: " -fg:$global:colors.Cyan) -NoNewline
-  $userInput = Read-Host 
-  If ($userInput.ToUpper() -eq "Y") { git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | awk '$2 == "[gone]" {print $1}' | xargs -r git branch -D }
-  Else { OUT $(PE -txt:"Cancelling" -fg:$global:colors.Cyan) }
+  $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
+  If ($userInput.ToUpper() -eq "Y") { 
+    OUT
+    git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | awk '$2 == "[gone]" {print $1}' | xargs -r git branch -D 
+  }
+  Else { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
 }
 Set-Alias dlb GitDeleteLocalBranchesDeletedFromRemote
 Add-ToFunctionList -category "Git" -name 'dlb' -value 'Git delete local branches deleted from remote'
+
+function Get-CoverageReport {
+  $jestOutput = pnpm jest --coverage --coverageReporters=text --silent
+
+  $coverageHeader = $jestOutput | Select-String -Pattern "^File\s+\|"
+  $coverageList = $jestOutput | Select-String -Pattern "^\s*\S+\.\S+\s+\|\s+\d+" | Where-Object { $_ -notmatch "^\*\*" }
+  $coverageLineDivider = $jestOutput | Select-String -Pattern "^-{3,}" | Select-Object -First 1
+
+  $firstLineColumnLength = ($coverageList[0].Matches[0].Value).Split('|')[0].Length
+  $totalNameLength = (($coverageList | ForEach-Object { $_.Matches[0].Value.Split('|')[0].Trim() }).ForEach({ $_.Length }) 
+      | Measure-Object -Maximum 
+      | Select-Object -ExpandProperty Maximum) + 15
+
+  $numberOfSpacesToBeRemoved = $firstLineColumnLength - $totalNameLength
+  
+  $shortenedDivider = "`t|-" + ($coverageLineDivider -replace "-{$numberOfSpacesToBeRemoved}\|", "|") + "|`n"
+  $shortenedHeader = "`t| " + ($coverageHeader -replace " {$numberOfSpacesToBeRemoved}\|", "|") + "|`n"
+  $shortenedContent = $coverageList | ForEach-Object {$_ -replace " {$numberOfSpacesToBeRemoved}\|", "|"}
+  
+  # Print the coverage report in the specified order
+  OUT $(PE -txt:($shortenedDivider -replace "-", "¯" ) -fg:$global:colors.Jade), $(PE -txt:$shortenedHeader -fg:$global:colors.Jade), $(PE -txt:$shortenedDivider -fg:$global:colors.Jade) -NoNewline
+  $index = 0
+  $shortenedContent | ForEach-Object { 
+      OUT $(PE -txt:"`t| " -fg:$global:colors.Jade) -NoNewline -NoNewlineStart:($index -eq 0)
+      $line = $_
+      $fullyCovered = ($line -split " 100 ").Length - 1 -eq 4
+      $nameColor = if ($fullyCovered) { $global:colors.Jade } else { $global:colors.DeepPink }
+      $line.Split('|') | ForEach-Object {
+          $elementColor = if ($_ -match "100") { $global:colors.Jade } else { $nameColor }
+          OUT $(PE -txt:"$_" -fg:$elementColor), $(PE -txt:"|" -fg:$global:colors.Jade) -NoNewline -NoNewlineStart
+      }
+      $index++
+  }
+  OUT $(PE -txt:($shortenedDivider -replace "-", "." ) -fg:$global:colors.Jade)
+}
+Set-Alias gcr Get-CoverageReport
+Add-ToFunctionList -category "Git" -name 'gcr' -value 'Get jest coverage report'
 
 function Set-TokenizedRemoteURL { 
   OUT $(PE -txt:"`tGo to GitHub -> Profile -> Settings -> Developer Settings -> Personal access token, and generate a token. `n`tEnter token: ") -NoNewline

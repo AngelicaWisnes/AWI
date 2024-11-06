@@ -7,9 +7,10 @@
 ########################
 class FunctionListElement { [string]$category ; [string]$name ; [string]$value } 
 
+$ListElement_Top = [FunctionListElement]@{ category = '¯'; name = '¯'; value = '¯' }
 $ListElement_BREAK = [FunctionListElement]@{ category = '-'; name = '-'; value = '-' }
-$ListElement_Empty = [FunctionListElement]@{ category = ''; name = ''; value = '' }
 $ListElement_Labels = [FunctionListElement]@{ category = 'CATEGORY'; name = 'NAME'; value = 'VALUE' }
+$ListElement_Empty = [FunctionListElement]@{ category = ''; name = ''; value = '' }
 $ListElement_End = [FunctionListElement]@{ category = '_'; name = '_'; value = '_' }
 
 $global:FunctionLists = @{
@@ -43,6 +44,13 @@ function Add-BlankLinesToDualLists {
   For ($i = 0; $i -lt $col2_Len; $i++) { $DualList_Col2.Add( $ListElement_Empty ) }
 }
 
+function Add-LineToAllLists {
+  param([Parameter(Mandatory)][FunctionListElement]$line)
+  $SingleList.Add( $line )
+  $DualList_Col1.Add( $line ) 
+  $DualList_Col2.Add( $line ) 
+}
+
 function FormatString([string]$str, [int]$colWidth, [string]$fillerChar) { 
   $padding = If ($global:isPadded) { $fillerChar }
   return $padding + $str.PadRight($colWidth, $fillerChar) + $padding 
@@ -50,8 +58,13 @@ function FormatString([string]$str, [int]$colWidth, [string]$fillerChar) {
 
 
 function FormatElement([FunctionListElement]$element) {
-  $fillerChar = If ($element.value -eq "_") { "_" } Elseif ($element.value -eq "-") { "-" } Else { " " }
-  
+  switch ($element.value) {
+    "_" { $fillerChar = "_" }
+    "-" { $fillerChar = "-" }
+    "¯" { $fillerChar = "¯" }
+    default { $fillerChar = " " }
+  }
+
   Return "|{0}|{1}|{2}|" -f `
   (FormatString -str:$element.category -colWidth:$global:categoryWidth -fillerChar:$fillerChar),
   (FormatString -str:$element.name -colWidth:$global:nameWidth -fillerChar:$fillerChar),
@@ -63,27 +76,24 @@ function FormatElement([FunctionListElement]$element) {
 # Calling-function #
 ####################
 function Initialize-FunctionListGenerator {
-  $SingleList.Add( $ListElement_Labels )
-  $DualList_Col1.Add( $ListElement_Labels )
-  $DualList_Col2.Add( $ListElement_Labels )
+  Add-LineToAllLists( $ListElement_Top )
+  Add-LineToAllLists( $ListElement_Labels )
   
   $global:FunctionLists = $global:FunctionLists.GetEnumerator() `
   | Sort-Object { - ($_.Value.Count) } `
   | ForEach-Object { @{ $_.Key = $_.Value } }
   
-  foreach ($listObject in $global:FunctionLists.Values) { 
-    $listObject = [System.Collections.Generic.List[FunctionListElement]]($listObject | Sort-Object -Property:value)
-    $SingleList.AddRange( $listObject )
+  foreach ($subList in $global:FunctionLists.Values) { 
+    $subList = [System.Collections.Generic.List[FunctionListElement]]($subList | Sort-Object -Property:value)
+    $SingleList.AddRange( $subList )
     
     $diff = $DualList_Col1.Count - $DualList_Col2.Count
-    if ($diff -le 0) { $DualList_Col1.AddRange( $listObject ) }
-    else { $DualList_Col2.AddRange( $listObject ) }
+    if ($diff -le 0) { $DualList_Col1.AddRange( $subList ) }
+    else { $DualList_Col2.AddRange( $subList ) }
   }
   
   Add-BlankLinesToDualLists
-  $SingleList.Add( $ListElement_End )
-  $DualList_Col1.Add( $ListElement_End ) 
-  $DualList_Col2.Add( $ListElement_End ) 
+  Add-LineToAllLists( $ListElement_End )
   
   $global:categoryWidth = (($SingleList.category) | Measure-Object -Maximum -Property:Length).Maximum
   $global:nameWidth = (($SingleList.name) | Measure-Object -Maximum -Property:Length).Maximum
@@ -111,7 +121,6 @@ function Get-ListOfFunctionsAndAliases {
 
   If (-not $global:isPadded) { $paddingSize = $indentSize = 0 }
   $indent = " " * $indentSize
-  $topBar = ".{0}." -f ("_" * ($fullInnerWidth + $paddingSize))
 
   $sb = [System.Text.StringBuilder]::new("AWI-defined functions and aliases:`n")
 

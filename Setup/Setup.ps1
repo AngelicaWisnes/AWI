@@ -40,13 +40,6 @@ logTime "Import Logo"
 . (Resolve-Path "$global:AWI/SystemDependent/SystemDependentSetup.ps1")
 logTime "Import SystemDependent"
 
-# Import modules
-if (!(Get-Module -ListAvailable -Name posh-git)) {
-  Install-Module -Name posh-git
-}
-Import-Module -Name posh-git -ArgumentList @($false, $false, $true) # Arguments: [bool]$ForcePoshGitPrompt, [bool]$UseLegacyTabExpansion, [bool]$EnableProxyFunctionExpansion
-logTime "Import Posh"
-
 
 ###############################
 ###      Initialization     ###
@@ -77,6 +70,7 @@ logTime "Get DadJoke" -restart $false
 
 # Shows navigable menu of all options when hitting Tab
 Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
+Set-PSReadLineKeyHandler -Key Ctrl+a -Function PossibleCompletions
 Set-PSReadlineKeyHandler -Key UpArrow -Function HistorySearchBackward
 Set-PSReadlineKeyHandler -Key DownArrow -Function HistorySearchForward
 

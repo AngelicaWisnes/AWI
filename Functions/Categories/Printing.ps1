@@ -254,7 +254,7 @@ function TestHexColor {
   param ([Parameter(Mandatory)][string]$hex )
   $color = Get-ColorFromHEX -hex:$hex
 
-  OUT $(PE -txt:"TESTING COLOR`n" -fg:$color), $(PE -txt:"             " -bg:$color)
+  OUT $(PE -txt:"TESTING COLOR`n$hex`n" -fg:$color), $(PE -txt:"             " -bg:$color)
 }
 Set-Alias thc TestHexColor
 Add-ToFunctionList -category "Printing" -name 'thc' -value 'Test hex color'
