@@ -345,14 +345,14 @@ Add-ToFunctionList -category "Git" -name 'rlb' -value 'Git rebase local branch'
 function GitDeleteLocalBranchesDeletedFromRemote { 
   OUT $(PE -txt:"Initiating deletion of local branches that have been deleted from remote: " -fg:$global:colors.Cyan)
   
-  git fetch --prune >$null
+  git fetch --prune *> $null 2>&1
 
   OUT $(PE -txt:"These are the remote deleted branches:" -fg:$global:colors.Cyan)
   $branches = git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | awk '$2 == "[gone]" {print $1}'
   
   if ($branches.length -eq 0) { Return OUT $(PE -txt:"`n`tNone" -fg:$global:colors.Cyan) }
 
-  OUT $(PE -txt:"$branches" -fg:$global:colors.Cyan) -NoNewlineStart
+  $branches = $branches -split "`n" | ForEach-Object { OUT $(PE -txt:"`t$_" -fg:$global:colors.Cyan) -NoNewlineStart }
 
   OUT $(PE -txt:"Continue deleting these branches from local [Y/N (Default)]: " -fg:$global:colors.Cyan) -NoNewline
   $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
