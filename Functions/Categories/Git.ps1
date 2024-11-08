@@ -316,7 +316,7 @@ function GitChooseLocalBranch {
 
   $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
   If ($userInput.ToUpper() -eq "M") { GitCheckout }
-  ElseIf (($userInput.Length -gt 0) -and ($userInput -in 0..$($localBrancheNamesAsList.Length - 1))) { GitCheckout $localBrancheNamesAsList[$userInput] }
+  ElseIf (($userInput -match '^\d+$') -and ($userInput -in 0..$($localBrancheNamesAsList.Length - 1))) { GitCheckout $localBrancheNamesAsList[$userInput] }
   Else { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
 }
 Set-Alias cob GitChooseLocalBranch
@@ -335,7 +335,7 @@ function GitRebaseLocalBranch {
 
   $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
   If ($userInput.ToUpper() -eq "M") { GitRebase }
-  ElseIf (($userInput.Length -gt 0) -and ($userInput -in 0..$($localBrancheNamesAsList.Length - 1))) { GitRebase $($localBrancheNamesAsList[$userInput]) }
+  ElseIf (($userInput -match '^\d+$') -and ($userInput -in 0..$($localBrancheNamesAsList.Length - 1))) { GitRebase $($localBrancheNamesAsList[$userInput]) }
   Else { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
 }
 Set-Alias rlb GitRebaseLocalBranch
