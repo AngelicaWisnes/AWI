@@ -358,7 +358,12 @@ function GitDeleteLocalBranchesDeletedFromRemote {
   $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
   If ($userInput.ToUpper() -eq "Y") { 
     OUT
-    git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | awk '$2 == "[gone]" {print $1}' | xargs -r git branch -D 
+    git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | ForEach-Object {
+      $parts = $_ -split ' '
+      if ($parts[1] -eq '[gone]') {
+          $parts[0]
+      }
+  } | ForEach-Object { git branch -D $_ }
   }
   Else { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
 }
@@ -411,49 +416,8 @@ function Set-TokenizedRemoteURL {
 Set-Alias stru Set-TokenizedRemoteURL
 Add-ToFunctionList -category "Git" -name 'stru' -value 'Set Remote URL w/personal access token'
 
-# TODO: Check if this function is completed - If not: Complete it
-function _pullAllRepos {
-  $root = Get-FullPath
-  $directories = (Get-ChildItem -Directory).name
-  
-  If ( $directories.Count -eq 0 ) { Return }
+function Set-GitEditorToVSCode { git config --global core.editor "code --wait --new-window"}
+Add-ToFunctionList -category "Git" -name 'Set-GitEditorToVSCode' -value 'Set git editor to VSCode'
 
-  $needsManualWork = [System.Text.StringBuilder]::new()
-
-  Foreach ($dir in $directories) {
-    Set-Location $root\$dir
-
-    $gitStatus = Get-GitStatus
-    
-    # If not a git-repo, recursively check sub-directiroes, then return jump to next
-    If ( -not $gitStatus ) { 
-      $subDirs = _pullAllRepos
-      If ( $subDirs.Length -gt 0 ) { [void]$needsManualWork.AppendFormat( "{0}", $subDirs ) }
-      Continue 
-    }
-
-    # TODO: This function is not finished
-
-    #$currentGitBranch = Get-CurrentGitBranch
-    #$masterGitBranch = Get-MasterBranch
-  
-    # If working tree is clean
-    If ((Get-GitStatus).Working.length -eq 0 -and (Get-GitStatus).Index.length -eq 0) {
-      
-      #If ($currentGitBranch -ne $masterGitBranch) { GitCheckoutMaster }
-      #GitPull
-    }
-    Else { [void]$needsManualWork.AppendFormat( "  {0}`n", $(Get-FullPath) ) }
-  }
-
-  Return $needsManualWork.ToString()
-}
-
-# TODO: Check if this function is completed - If not: Complete it
-function pullAllRepos {
-  Set-Location $global:DEFAULT_START_PATH
-  $needsManualWork = _pullAllRepos
-  Set-Location $global:DEFAULT_START_PATH
-  
-  OUT $(PE -txt:"The following repos need to be pulled manually:`n$needsManualWork" -fg:$colors.Red)
-}
+function Edit-GitConfig { git config --global --edit }
+Add-ToFunctionList -category "Git" -name 'Edit-GitConfig' -value 'Edit global git config'

@@ -1,17 +1,14 @@
 .vs
 .VS*
 
-*Constants/SystemDependent/*
-!*Constants/SystemDependent/Template
-
-*Functions/Categories/SystemDependent/*
-!*Functions/Categories/SystemDependent/Template
 
 *SystemDependent/*
 !*SystemDependent/Template
 !*SystemDependent/SystemDependentSetup.ps1
 
-*Unused*
+*ExternalInstallation/Flags/*
+
+*TEMPORARY FILES*
 
 .idea*
 

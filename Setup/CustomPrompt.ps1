@@ -116,7 +116,7 @@ function Get-GitPrompt {
   $stagedChanged = $stagedStatus['~']
   $stagedDeleted = $stagedStatus['-']
   If ( ($stagedAdded -gt 0) -or ($stagedChanged -gt 0) -or ($stagedDeleted -gt 0) ) { 
-    [void]$sb.Append($GitPromptInfix + $colorMintGreen + $checkmark + " +" + $stagedAdded + " ~" + $stagedChanged + " -" + $stagedDeleted + $global:RESET_SEQUENCE)
+    [void]$sb.Append($GitPromptInfix + $colorMintGreen + $checkmark + "  +" + $stagedAdded + " ~" + $stagedChanged + " -" + $stagedDeleted + $global:RESET_SEQUENCE)
   }
         
   # GitPrompt Unstaged information
@@ -124,7 +124,7 @@ function Get-GitPrompt {
   $unstagedChanged = $unstagedStatus['~']
   $unstagedDeleted = $unstagedStatus['-']
   If ( ($unstagedAdded -gt 0) -or ($unstagedChanged -gt 0) -or ($unstagedDeleted -gt 0) ) { 
-    [void]$sb.Append($GitPromptInfix + $colorMonaLisa + $warning + " +" + $unstagedAdded + " ~" + $unstagedChanged + " -" + $unstagedDeleted + $global:RESET_SEQUENCE)
+    [void]$sb.Append($GitPromptInfix + $colorMonaLisa + $warning + "  +" + $unstagedAdded + " ~" + $unstagedChanged + " -" + $unstagedDeleted + $global:RESET_SEQUENCE)
   }
           
   # GitPrompt Postfix

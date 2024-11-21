@@ -77,7 +77,6 @@ function Format-VariablePath {
         return "Resolve-Path `"$pathString`""
     }
 
-
     $directory = Split-Path -Path $pathString -Parent
     $directory = $directory.Replace("/", "\")
     $fileName = Split-Path -Path $pathString -Leaf
@@ -93,9 +92,10 @@ function Format-VariablePath {
 
 # Import SystemDependent Constants
 if (-not (Test-Path $sysDepRoot)) { Copy-TemplateDirectory }
-. $global:SYSTEM_CONSTANTS_PATH
-. $global:SYSTEM_PROJECTS_PATH
-. $global:SYSTEM_FUNCTIONS_PATH
+. (Resolve-Path $global:SYSTEM_CONSTANTS_PATH)
+. (Resolve-Path $global:SYSTEM_PROJECTS_PATH)
+. (Resolve-Path $global:SYSTEM_FUNCTIONS_PATH)
+
 
 # Specify SystemDependentFunction-getters for general usage
 function Get-SystemDependentGitCheckouts { SystemDependentGitCheckouts }
