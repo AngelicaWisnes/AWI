@@ -40,6 +40,9 @@ logTime "Import Logo"
 . (Resolve-Path "$global:AWI/SystemDependent/SystemDependentSetup.ps1")
 logTime "Import SystemDependent"
 
+. (Resolve-Path "$global:AWI/ExternalInstallation/ExternalInstallation.ps1")
+logTime "Import ExternalInstallation"
+
 
 ###############################
 ###      Initialization     ###
