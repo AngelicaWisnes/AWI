@@ -13,3 +13,5 @@ function Import-Modules {
   }
 }
 
+# Import-Module -Name posh-git -ArgumentList @($false, $false, $true)
+# Install-Module -Name posh-git

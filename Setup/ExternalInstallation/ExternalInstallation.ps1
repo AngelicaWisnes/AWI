@@ -3,7 +3,7 @@
 # Flag-handler functions #
 ##########################
 
-$Global:FLAG_PATH = Join-Path $PSScriptRoot "Flags"
+$Global:FLAG_PATH = Join-Path $PSScriptRoot 'Flags'
 
 function Test-FlagExists {
   param ([Parameter(Mandatory)][string]$flagName)
@@ -16,7 +16,7 @@ function Add-Flag {
   OUT $(PE -txt:"Adding flag: $flagName" -fg:$Global:colors.Cyan)
   $flagFilePath = Join-Path -Path $FLAG_PATH -ChildPath "$flagName.flag"
   if (Test-FlagExists -flagName $flagName) { Return OUT $(PE -txt:"Flag already exists: $flagName" -fg:$Global:colors.Green) }
-  
+
   if (-Not (Test-FlagExists -flagName $flagName)) { New-Item -ItemType File -Path $flagFilePath -Force | Out-Null }
   if (Test-FlagExists -flagName $flagName) { OUT $(PE -txt:"Successfully added flag: $flagName" -fg:$Global:colors.Green) }
   else { OUT $(PE -txt:"Failed to add flag: $flagName" -fg:$Global:colors.Red) }
@@ -43,31 +43,17 @@ function Set-FlagPath {
 
 . (Resolve-Path "$PSScriptRoot\Installers\AppInstaller.ps1")
 . (Resolve-Path "$PSScriptRoot\Installers\ModuleInstaller.ps1")
-
-
-function Confirm-Action {
-  param([Parameter(Mandatory)][String] $Prompt)
-  
-  $private:response = Read-Host "$Prompt [Y/N] (Default: N)"
-  if ($private:response.ToUpper() -eq 'Y') {
-    OUT $(PE -txt:"Proceeding with action..." -fg:$Global:colors.Cyan)
-    return $true
-  }
-  else {
-    OUT $(PE -txt:"Proceeding without action..." -fg:$Global:colors.Cyan)
-    return $false
-  }
-}
+. (Resolve-Path "$PSScriptRoot\VSCode\VSCodeSetup.ps1")
 
 
 function Remove-Flags {
-  $flags = Get-ChildItem -Path $Global:SYSTEM_FLAGS_PATH -Filter "*.flag" -Recurse
+  $flags = Get-ChildItem -Path $Global:SYSTEM_FLAGS_PATH -Filter '*.flag' -Recurse
   $flags | ForEach-Object {
     $flagName = $_.BaseName
     If (Confirm-Action -Prompt "Removing flag: $flagName") { Remove-Flag -flagName $flagName }
   }
 }
-Add-ToFunctionList -category "System" -name 'Remove-Flags' -value 'Selectively remove flags from the system'
+Add-ToFunctionList -category 'Setup' -name 'Remove-Flags' -value 'Selectively remove flags from the system'
 
 
 #################################################

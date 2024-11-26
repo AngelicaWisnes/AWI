@@ -1,14 +1,13 @@
 .vs
 .VS*
 
-
 *SystemDependent/*
 !*SystemDependent/Template
 !*SystemDependent/SystemDependentSetup.ps1
 
-*ExternalInstallation/Flags/*
+Flags/
 
-*TEMPORARY FILES*
+TEMPORARY FILES/
 
 .idea*
 

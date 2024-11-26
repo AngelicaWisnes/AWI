@@ -17,12 +17,13 @@ function logTime {
 #################################################
 ###     Import relevant files and modules     ###
 #################################################
+$setupRoot = $PSScriptRoot
 
 $sw.Start()
 . (Resolve-Path "$global:AWI/Constants/Constants.ps1")
 logTime "Import Constants"
 
-. (Resolve-Path "$PSScriptRoot\CustomPrompt.ps1")
+. (Resolve-Path "$setupRoot\CustomPrompt.ps1")
 logTime "Import CustomPrompt"
 
 . (Resolve-Path "$global:AWI/FunctionListGenerator/FunctionListGenerator.ps1")
@@ -40,7 +41,7 @@ logTime "Import Logo"
 . (Resolve-Path "$global:AWI/SystemDependent/SystemDependentSetup.ps1")
 logTime "Import SystemDependent"
 
-. (Resolve-Path "$global:AWI/ExternalInstallation/ExternalInstallation.ps1")
+. (Resolve-Path "$setupRoot/ExternalInstallation/ExternalInstallation.ps1")
 logTime "Import ExternalInstallation"
 
 
@@ -111,7 +112,7 @@ function timeTesting {
   logTestingTime "Get git status"
   
   "Log some other code"
-  logTestingTime "Get localbranch"
+  logTestingTime "Get localBranch"
   
   "Log some final code"
   logTestingTime "Get-GitPrompt2" -restart $false

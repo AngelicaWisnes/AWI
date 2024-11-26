@@ -1,0 +1,93 @@
+{
+    "workbench.colorTheme": "One Dark Darker",
+    "workbench.editorAssociations": {
+        "*.jar": "default"
+    },
+    "explorer.confirmDragAndDrop": false,
+    "workbench.activityBar.location": "top",
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.formatOnSave": true,
+    "workbench.colorCustomizations": {
+        "editorGroup.border": "#393939",
+        "sideBar.border": "#393939",
+        "tab.activeBackground": "#2e2e36",
+        "tab.activeBorder": "#ff0000",
+        "tab.unfocusedActiveBorder": "#f99999"
+    },
+    "github.copilot.advanced": {
+        "authProvider": "github-enterprise"
+    },
+    "github-enterprise.uri": "https://dnb.ghe.com",
+    "github.copilot.enable": {
+        "plaintext": true,
+        "markdown": true
+    },
+    "todo-tree.tree.showCountsInTree": true,
+    "gitblame.inlineMessageEnabled": true,
+    "gitblame.ignoreWhitespace": true,
+    "gitblame.statusBarMessageFormat": "Blame ${author.name} (${time.ago} - ${commit.summary})",
+    "gitblame.inlineMessageFormat": "Blame ${author.name} (${time.ago} - ${commit.summary})",
+    "javascript.referencesCodeLens.enabled": true,
+    "javascript.referencesCodeLens.showOnAllFunctions": true,
+    "typescript.implementationsCodeLens.enabled": true,
+    "typescript.implementationsCodeLens.showOnInterfaceMethods": true,
+    "typescript.referencesCodeLens.enabled": true,
+    "typescript.referencesCodeLens.showOnAllFunctions": true,
+    "editor.linkedEditing": true,
+    "indentRainbow.indicatorStyle": "light",
+    "indentRainbow.lightIndicatorStyleLineWidth": 2,
+    "indentRainbow.colors": [
+        "rgba(255,255,64,0.3)",
+        "rgba(127,255,127,0.3)",
+        "rgba(255,127,255,0.3)",
+        "rgba(79,236,236,0.3)"
+    ],
+    "turboConsoleLog.insertEmptyLineBeforeLogMessage": true,
+    "turboConsoleLog.insertEmptyLineAfterLogMessage": true,
+    "turboConsoleLog.logMessagePrefix": "",
+    "workbench.settings.openDefaultKeybindings": true,
+    "cSpell.userWords": [
+        "Anbefalt",
+        "avkastning",
+        "basepath",
+        "colorfull",
+        "eplatform",
+        "eufemia",
+        "gitblame",
+        "Indeks",
+        "Kostnadsoversikt",
+        "lokalise",
+        "moneymarket",
+        "nonbinary",
+        "Overconsumption",
+        "portefølje",
+        "Porteføljeanalyse",
+        "productclass",
+        "rgba",
+        "tanstack",
+        "Teknologi",
+        "testid",
+        "transferrables",
+        "typecheck",
+        "Uncompress",
+        "Unmark",
+        "Unprotect",
+        "Unpublish",
+        "Unrestrict",
+        "usehooks",
+        "uuidv",
+        "Vekst",
+        "winget"
+    ],
+    "errorLens.alignMessage": {
+        "end": 0,
+        "minimumMargin": 0,
+        "start": 150
+    },
+    "errorLens.fontWeight": "100",
+    "github.copilot.chat.generateTests.codeLens": true,
+    "editor.tabSize": 2,
+    "powershell.codeFormatting.autoCorrectAliases": true,
+    "powershell.codeFormatting.useConstantStrings": true,
+    "powershell.codeFormatting.useCorrectCasing": true
+}

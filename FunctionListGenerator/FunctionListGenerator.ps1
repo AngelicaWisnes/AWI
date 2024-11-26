@@ -23,6 +23,7 @@ $global:FunctionLists = @{
   React      = [System.Collections.Generic.List[FunctionListElement]]::new();
   System     = [System.Collections.Generic.List[FunctionListElement]]::new();
   Upgrading  = [System.Collections.Generic.List[FunctionListElement]]::new();
+  Setup      = [System.Collections.Generic.List[FunctionListElement]]::new();
   Other      = [System.Collections.Generic.List[FunctionListElement]]::new();
 }
 

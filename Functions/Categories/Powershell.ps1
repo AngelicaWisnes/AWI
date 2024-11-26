@@ -2,6 +2,21 @@
 ################################
 # PowerShell-related functions #
 ################################
+function Confirm-Action {
+  param([Parameter(Mandatory)][String] $Prompt)
+  
+  OUT $(PE -txt:"$Prompt [Y/N] (Default - N): " -fg:$global:colors.White) -NoNewline
+  $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
+  if ($private:userInput.ToUpper() -eq 'Y') {
+    OUT $(PE -txt:"`nProceeding with action..." -fg:$Global:colors.Cyan)
+    return $true
+  }
+  else {
+    OUT $(PE -txt:"`nProceeding without action..." -fg:$Global:colors.Cyan)
+    return $false
+  }
+}
+
 function Set-LocationOneBack { Set-Location .. }
 Set-Alias cd. Set-LocationOneBack
 Add-ToFunctionList -category "PowerShell" -name 'cd.' -value 'cd ..'
@@ -46,8 +61,8 @@ Add-ToFunctionList -category "PowerShell" -name 'awi' -value 'Push-Location $AWI
 
 
 function ReloadAWI { 
-  $startPath = Get-Location
-  OUT $(PE -txt:"`tReloading profile with startpath: `n`t$startpath`n" -fg:$global:colors.Cyan)
+  $global:startPath = Get-Location
+  OUT $(PE -txt:"`tReloading profile with start-path: `n`t$global:startPath`n" -fg:$global:colors.Cyan)
   . $global:AWI\AWI.ps1
 }
 Set-Alias ra ReloadAWI
@@ -55,8 +70,8 @@ Add-ToFunctionList -category "PowerShell" -name '. ra' -value 'Reload AWI'
 
 
 function ReloadPsProfile { 
-  $startPath = Get-Location
-  OUT $(PE -txt:"`tReloading profile with startpath: `n`t$startpath`n" -fg:$global:colors.Cyan)
+  $global:startPath = Get-Location
+  OUT $(PE -txt:"`tReloading profile with start-path: `n`t$global:startPath`n" -fg:$global:colors.Cyan)
   . $profile
 }
 Set-Alias rap ReloadPsProfile
