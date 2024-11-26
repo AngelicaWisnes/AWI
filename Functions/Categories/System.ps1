@@ -15,27 +15,26 @@ enum IdeChoice { AUTO ; NONE; VSCODE ; DOTNET ; JS } # TODO: This is currently n
 
 
 class PROJECT {
-  [enum]$type;
-  [string]$name; 
-  [string]$repo; 
-  [string]$branch; 
-  [int]$useDotNetIde;
-  [string]$webs; 
-  [bool]$stdSctript;
-  [scriptblock]$customScript; 
-  [array]$nestedProjects;
-} 
+  [enum]$type
+  [string]$name
+  [string]$repo
+  [string]$branch
+  [int]$useDotNetIde
+  [string]$webs
+  [bool]$stdScript
+  [scriptblock]$customScript
+  [array]$nestedProjects
+}
 
 
-$global:allProjects = [PROJECT]@{ 
+$global:allProjects = [PROJECT]@{
   type           = [ProjectType]::ALL
   name           = 'All of the following'
   repo           = ''
   branch         = ''
   useDotNetIde   = 0
   webs           = ''
-  stdSctript     = $false
-  customScript   = { For ($i = 1; $i -lt $projects.length; $i++) { pro -projects $projects -decision $i; } } 
+  stdScript      = $false
+  customScript   = { For ($i = 1; $i -lt $projects.length; $i++) { pro -projects $projects -decision $i; } }
   nestedProjects = @()
-};
-
+}

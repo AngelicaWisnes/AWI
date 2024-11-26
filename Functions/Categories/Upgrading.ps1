@@ -3,14 +3,14 @@ function UpgradeWinget {
   winget upgrade --all
 }
 Set-Alias uw UpgradeWinget
-Add-ToFunctionList -category "Upgrading" -name 'uw' -value 'Upgrade winget'
+Add-ToFunctionList -category 'Upgrading' -name 'uw' -value 'Upgrade winget'
 
 function UpgradeChoco {
   choco upgrade all
   # choco upgrade all --except="'skype,conemu'"
 }
 Set-Alias uc UpgradeChoco
-Add-ToFunctionList -category "Upgrading" -name 'uc' -value 'Upgrade choco'
+Add-ToFunctionList -category 'Upgrading' -name 'uc' -value 'Upgrade choco'
 
 
 
@@ -22,19 +22,19 @@ function Get-WingetUpgradeList {
     [string]$Version
     [string]$AvailableVersion
   }
-  
+
   $lines = (winget upgrade | Out-String).Split([Environment]::NewLine)
-  
+
   # Find the line that starts with Name, it contains the header
   $fl = 0
-  while (-not $lines[$fl].StartsWith("Name")) { $fl++ }
-  
+  while (-not $lines[$fl].StartsWith('Name')) { $fl++ }
+
   # Line $fl has the header, we can find char where we find ID and Version
-  $idStart = $lines[$fl].IndexOf("Id")
-  $versionStart = $lines[$fl].IndexOf("Version")
-  $availableStart = $lines[$fl].IndexOf("Available")
-  $sourceStart = $lines[$fl].IndexOf("Source")
-  
+  $idStart = $lines[$fl].IndexOf('Id')
+  $versionStart = $lines[$fl].IndexOf('Version')
+  $availableStart = $lines[$fl].IndexOf('Available')
+  $sourceStart = $lines[$fl].IndexOf('Source')
+
   # Now cycle in real package and split accordingly
   $upgradeList_winget = @()
   For ($i = $fl + 1; $i -le $lines.Length; $i++) {
@@ -45,7 +45,7 @@ function Get-WingetUpgradeList {
       $version = $line.Substring($versionStart, $availableStart - $versionStart).TrimEnd()
       $available = $line.Substring($availableStart, $sourceStart - $availableStart).TrimEnd()
 
-      $upgradeList_winget += [Software]@{ 
+      $upgradeList_winget += [Software]@{
         Name             = $name
         Id               = $id
         Version          = $version
@@ -70,35 +70,34 @@ function upgradeSkip {
   #  "OpenWhisperSystems.Signal",
   #  "Spotify.Spotify"
   #)
-    
+
   $skippedPackages = @()
-    
+
   foreach ($package in $upgradeList_winget) {
     # If (-not ($toSkip -contains $package.Id)) {}
-    If ($package.Version -ne "Unknown") {
+    If ($package.Version -ne 'Unknown') {
       winget upgrade $package.id
     }
-    Else {    
+    Else {
       #$skippedPackages += $package
     }
   }
-    
+
   If ($skippedPackages.Count -gt 0) {
-    Write-Host -ForegroundColor Cyan "The following packages were not upgraded"
+    Write-Host -ForegroundColor Cyan 'The following packages were not upgraded'
     $skippedPackages | Format-Table
   }
 }
- 
+
 
 function Get-UpgradeLists {
   Get-WingetUpgradeList
   Get-ChocoUpgradeLists
 }
 Set-Alias u Get-UpgradeLists
-Add-ToFunctionList -category "Upgrading" -name 'u' -value 'Get upgrade lists'
+Add-ToFunctionList -category 'Upgrading' -name 'u' -value 'Get upgrade lists'
 
 
 function Get-UpgradeListsInfo {
   OUT $(PE -txt:"Enter 'u' to list all available 'winget'- and 'choco'-upgrades" -fg:$global:colors.DeepPink) -NoNewlineStart
 }
-

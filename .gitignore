@@ -1,9 +1,9 @@
-.vs
-.VS*
+.vscode/*
+!.vscode/settings.json
 
-*SystemDependent/*
-!*SystemDependent/Template
-!*SystemDependent/SystemDependentSetup.ps1
+SystemDependent/*
+!SystemDependent/Template
+!SystemDependent/SystemDependentSetup.ps1
 
 Flags/
 

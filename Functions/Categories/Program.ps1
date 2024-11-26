@@ -4,12 +4,12 @@
 ##############################
 function ide_autoChoose {
   <#
-  TODO: Create a dynamic choosing-agorithm for opening the best IDE for (parameterized)-"current directory", 
+  TODO: Create a dynamic choosing-algorithm for opening the best IDE for (parameterized)-"current directory",
   based on the content of said directory
-  
-  Examples: 
-  If directory contains a yarn.lock-file, or a file with extention ".js", ".jsx", ".ts", ".tsx", then open ide_JavaScript
-  elseif directory contains ".sln", then open ide_dotNet
+
+  Examples:
+  If directory contains a yarn.lock-file, or a file with extension ".js", ".jsx", ".ts", ".tsx", then open ide_JavaScript
+  Elseif directory contains ".sln", then open ide_dotNet
   Else open ide_vsCode
   #>
 }
@@ -42,7 +42,7 @@ Set-Alias cn ide_vsCode_NewFile
 Add-ToFunctionList -category 'Program' -name 'cn' -value 'Open new file in VS Code'
 
 
-function o { 
+function o {
   If ($args.Length -eq 0) { Invoke-Item . }
   Else { Invoke-Item $args }
 }
@@ -55,8 +55,8 @@ Add-ToFunctionList -category 'Program' -name 'open' -value 'Invoke-Item'
 
 
 function startNewBrowser {
-  # Args must be a string, and specialcharacters must be escaped
-  Start-Process $global:MY_BROWSER -ArgumentList "--new-window", "$args" 
+  # Args must be a string, and specialCharacters must be escaped
+  Start-Process $global:MY_BROWSER -ArgumentList '--new-window', "$args"
 }
 Set-Alias snb startNewBrowser
 Add-ToFunctionList -category 'Program' -name 'snb' -value 'Start new browser'
@@ -65,5 +65,5 @@ Add-ToFunctionList -category 'Program' -name 'snb' -value 'Start new browser'
 function _startIDE {
   param( [Parameter(Mandatory)][string]$IDE )
   $currentPath = Get-FullPath
-  Start-Process $IDE -ArgumentList "$currentPath" 
+  Start-Process $IDE -ArgumentList "$currentPath"
 }

@@ -12,7 +12,7 @@ If ($SYSTEM_PROJECTS.Count -gt 0) { $SYSTEM_PROJECTS = @( $allProjects; ) + $SYS
 <#
 THE FOLLOWING IS FOR TESTING PURPOSES
 
-$SYSTEM_PROJECTS_TEST = @( 
+$SYSTEM_PROJECTS_TEST = @(
   [PROJECT]@{
     type           = [ProjectType]::STANDARD
     name           = 'AWI - Personal PowerShell-tool'
@@ -20,7 +20,7 @@ $SYSTEM_PROJECTS_TEST = @(
     branch         = 'main'
     useDotNetIde   = 0
     webs           = ''
-    stdSctript     = $true
+    stdScript     = $true
     customScript   = $null
     nestedProjects = @()
   };
@@ -32,11 +32,11 @@ $SYSTEM_PROJECTS_TEST = @(
     branch         = 'random-branch-name'
     useDotNetIde   = 0
     webs           = 'https://www.github.com/full-url-to-this-repo'
-    stdSctript     = $false
+    stdScript     = $false
     customScript   = $null
     nestedProjects = @()
   };
-  
+
   [PROJECT]@{
     type           = [ProjectType]::MULTIPLE
     name           = 'Test number 2'
@@ -44,10 +44,10 @@ $SYSTEM_PROJECTS_TEST = @(
     branch         = ''
     useDotNetIde   = 0
     webs           = '
-    https://www.figma.com/ 
+    https://www.figma.com/
     https://www.github.com/full-url-to-this-repo
     '
-    stdSctript     = $false;
+    stdScript     = $false;
     customScript   = $null
     nestedProjects = @($allProjects;
       [PROJECT]@{
@@ -57,7 +57,7 @@ $SYSTEM_PROJECTS_TEST = @(
         branch         = 'random-branch-name-for-this-subproject'
         useDotNetIde   = 0
         webs           = 'https://www.github.com/full-url-to-this-repo'
-        stdSctript     = $true
+        stdScript     = $true
         customScript   = $null
         nestedProjects = @()
       };
@@ -69,7 +69,7 @@ $SYSTEM_PROJECTS_TEST = @(
         branch         = 'random-branch-name-for-this-subproject'
         useDotNetIde   = 0
         webs           = 'https://www.github.com/full-url-to-this-repo'
-        stdSctript     = $false
+        stdScript     = $false
         customScript   = { _pro_Ready }
         nestedProjects = @()
       };
@@ -81,7 +81,7 @@ $SYSTEM_PROJECTS_TEST = @(
         branch         = 'Ref-XXX'
         useDotNetIde   = 0
         webs           = 'https://www.github.com/full-url-to-this-repo'
-        stdSctript     = $false
+        stdScript     = $false
         customScript   = { _pro_Merged 'name-of-old-branch (Ref-XXX)' 'name-of-new-branch (Ref-XXX is merged into this one)' }
         nestedProjects = @()
       };

@@ -4,115 +4,116 @@
 ################################
 function Confirm-Action {
   param([Parameter(Mandatory)][String] $Prompt)
-  
+
   OUT $(PE -txt:"$Prompt [Y/N] (Default - N): " -fg:$global:colors.White) -NoNewline
   $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
-  if ($private:userInput.ToUpper() -eq 'Y') {
+  If ($private:userInput.ToUpper() -eq 'Y') {
     OUT $(PE -txt:"`nProceeding with action..." -fg:$Global:colors.Cyan)
-    return $true
+    Return $true
   }
-  else {
+  Else {
     OUT $(PE -txt:"`nProceeding without action..." -fg:$Global:colors.Cyan)
-    return $false
+    Return $false
   }
 }
 
+
 function Set-LocationOneBack { Set-Location .. }
 Set-Alias cd. Set-LocationOneBack
-Add-ToFunctionList -category "PowerShell" -name 'cd.' -value 'cd ..'
+Add-ToFunctionList -category 'PowerShell' -name 'cd.' -value 'cd ..'
 
 
 function Edit-AWIProfile { code $global:AWI }
 Set-Alias ep Edit-AWIProfile
-Add-ToFunctionList -category "PowerShell" -name 'ep' -value 'Edit AWI'
+Add-ToFunctionList -category 'PowerShell' -name 'ep' -value 'Edit AWI'
 
 
-function Edit-AWIAndPsProfile { 
+function Edit-AWIAndPsProfile {
   Edit-AWIProfile
-  code $profile 
+  code $profile
 }
 Set-Alias epp Edit-AWIAndPsProfile
-Add-ToFunctionList -category "PowerShell" -name 'epp' -value 'Edit AWI and PS-profile'
+Add-ToFunctionList -category 'PowerShell' -name 'epp' -value 'Edit AWI and PS-profile'
 
 function Get-FullPath { (Resolve-Path .\).Path }
 Set-Alias pa Get-FullPath
-Add-ToFunctionList -category "PowerShell" -name 'pa' -value 'Get current path'
+Add-ToFunctionList -category 'PowerShell' -name 'pa' -value 'Get current path'
 
 
 function Get-CurrentRepo { Split-Path -Leaf (Get-FullPath) }
 Set-Alias re Get-CurrentRepo
-Add-ToFunctionList -category "PowerShell" -name 're' -value 'Get current repo'
+Add-ToFunctionList -category 'PowerShell' -name 're' -value 'Get current repo'
 
 
 function Push-LocationHome { Push-Location $global:DEFAULT_START_PATH }
 Set-Alias home Push-LocationHome
-Add-ToFunctionList -category "PowerShell" -name 'home' -value 'Push-Location default-start-path'
+Add-ToFunctionList -category 'PowerShell' -name 'home' -value 'Push-Location default-start-path'
 
 Set-Alias i Invoke-History
-Add-ToFunctionList -category "PowerShell" -name 'i' -value 'Invoke-History'
+Add-ToFunctionList -category 'PowerShell' -name 'i' -value 'Invoke-History'
 
 function Reset-Color { [console]::ResetColor() }
 Set-Alias rc Reset-Color
-Add-ToFunctionList -category "PowerShell" -name 'rc' -value 'Reset color scheme'
+Add-ToFunctionList -category 'PowerShell' -name 'rc' -value 'Reset color scheme'
 
 function Push-LocationAWI { Push-Location $global:AWI }
 Set-Alias awi Push-LocationAWI
-Add-ToFunctionList -category "PowerShell" -name 'awi' -value 'Push-Location $AWI'
+Add-ToFunctionList -category 'PowerShell' -name 'awi' -value 'Push-Location $AWI'
 
 
-function ReloadAWI { 
+function ReloadAWI {
   $global:startPath = Get-Location
   OUT $(PE -txt:"`tReloading profile with start-path: `n`t$global:startPath`n" -fg:$global:colors.Cyan)
   . $global:AWI\AWI.ps1
 }
 Set-Alias ra ReloadAWI
-Add-ToFunctionList -category "PowerShell" -name '. ra' -value 'Reload AWI'
+Add-ToFunctionList -category 'PowerShell' -name '. ra' -value 'Reload AWI'
 
 
-function ReloadPsProfile { 
+function ReloadPsProfile {
   $global:startPath = Get-Location
   OUT $(PE -txt:"`tReloading profile with start-path: `n`t$global:startPath`n" -fg:$global:colors.Cyan)
   . $profile
 }
 Set-Alias rap ReloadPsProfile
-Add-ToFunctionList -category "PowerShell" -name '. rap' -value 'Reload PS-profile'
+Add-ToFunctionList -category 'PowerShell' -name '. rap' -value 'Reload PS-profile'
 
 function Get-SelectableFileTree {
   param([string]$preSelection)
 
-  $Path = (Join-Path -Path (Get-Location) -ChildPath "src")
+  $Path = (Join-Path -Path (Get-Location) -ChildPath 'src')
   $global:folderPaths = @()
 
   function Show-Tree {
-      param (
-          [string]$BasePath,
-          [ref]$Index,
-          [string]$Prefix = "",
-          [string]$RelativePath = ""
-      )
+    param (
+      [string]$BasePath,
+      [ref]$Index,
+      [string]$Prefix = '',
+      [string]$RelativePath = ''
+    )
 
-      $folders = Get-ChildItem -Path $BasePath -Directory | Where-Object { $_.Name -ne "node_modules" }
+    $folders = Get-ChildItem -Path $BasePath -Directory | Where-Object { $_.Name -ne 'node_modules' }
 
-      foreach ($folder in $folders) {
-          $Index.Value++
-          $currentRelativePath = if ($RelativePath) { Join-Path -Path $RelativePath -ChildPath $folder.Name } else { $folder.Name }
-          $global:folderPaths += $currentRelativePath
-          If (-not $preSelection) {OUT $(PE -txt:$("  {0,4} {1}- {2}" -f $Index.Value, $Prefix, $folder.Name) -fg:$global:colors.Cyan) -NoNewlineStart}
-          Show-Tree -BasePath $folder.FullName -Index $Index -Prefix "$Prefix- " -RelativePath $currentRelativePath
-      }
+    foreach ($folder in $folders) {
+      $Index.Value++
+      $currentRelativePath = If ($RelativePath) { Join-Path -Path $RelativePath -ChildPath $folder.Name } Else { $folder.Name }
+      $global:folderPaths += $currentRelativePath
+      If (-not $preSelection) { OUT $(PE -txt:$('  {0,4} {1}- {2}' -f $Index.Value, $Prefix, $folder.Name) -fg:$global:colors.Cyan) -NoNewlineStart }
+      Show-Tree -BasePath $folder.FullName -Index $Index -Prefix "$Prefix- " -RelativePath $currentRelativePath
+    }
   }
 
   $index = [ref]0
-  If (-not $preSelection) {OUT $(PE -txt:"Directory-tree:" -fg:$global:colors.Cyan)}
+  If (-not $preSelection) { OUT $(PE -txt:'Directory-tree:' -fg:$global:colors.Cyan) }
   Show-Tree -BasePath $Path -Index $index
-  If (-not $preSelection) {OUT $(PE -txt:"Enter the number of the folder you want to select: " -fg:$global:colors.Cyan) -NoNewline}
+  If (-not $preSelection) { OUT $(PE -txt:'Enter the number of the folder you want to select: ' -fg:$global:colors.Cyan) -NoNewline }
 
-  $selection = If ($preSelection) {$preSelection} else {Read-Host}
-  if ($selection -le 0 -or $selection -gt $global:folderPaths.Count) { Write-Host "Invalid selection. Please try again." } 
-  
+  $selection = If ($preSelection) { $preSelection } Else { Read-Host }
+  If ($selection -le 0 -or $selection -gt $global:folderPaths.Count) { Write-Host 'Invalid selection. Please try again.' }
+
   Return $global:folderPaths[$selection - 1]
 }
-Add-ToFunctionList -category "PowerShell" -name 'Get-SelectableFileTree' -value 'Get selectable file tree'
+Add-ToFunctionList -category 'PowerShell' -name 'Get-SelectableFileTree' -value 'Get selectable file tree'
 
 function Get-FunctionDefinition {
   param( [Parameter(Mandatory)][String]$commandName )
@@ -121,25 +122,25 @@ function Get-FunctionDefinition {
   OUT $(PE -txt:$codeBlock -fg:$global:colors.White)
 }
 Set-Alias see Get-FunctionDefinition
-Add-ToFunctionList -category "PowerShell" -name 'see' -value 'See the code-block of function'
+Add-ToFunctionList -category 'PowerShell' -name 'see' -value 'See the code-block of function'
 
 
 function Get-FunctionNameFromCommandName {
   param( [Parameter(Mandatory)][String]$commandName )
   $command = Get-Command $commandName
   $commandType = $command.CommandType
-  If ( $commandType -eq "Function" ) { Return $commandName }
-  If ( $commandType -eq "Alias" ) { 
+  If ( $commandType -eq 'Function' ) { Return $commandName }
+  If ( $commandType -eq 'Alias' ) {
     OUT $(PE -txt:"`tCommand-name '$commandName' is an alias for Function-name '$($command.Definition)'`n" -fg:$global:colors.Cyan)
-    Return $command.Definition 
+    Return $command.Definition
   }
   Else { OUT $(PE -txt:"`tMISSING IMPLEMENTATION FOR COMMAND-TYPE '$commandType', in Get-FunctionNameFromCommandName`n" -fg:$global:colors.Red) }
 }
 
 function Get-WindowDimensions {
   param(
-  [int]$heightPadding = 13,
-  [int]$widthPadding = 1
+    [int]$heightPadding = 13,
+    [int]$widthPadding = 1
   )
   $windowWidth = $Host.UI.RawUI.WindowSize.Width - $widthPadding
   $windowHeight = $Host.UI.RawUI.WindowSize.Height - $heightPadding
@@ -159,23 +160,23 @@ function Start-NewPowershell {
     "-NoExit -Command & { $($script -replace '"', '\"') } $params"
 }
 Set-Alias snp Start-NewPowershell
-Add-ToFunctionList -category "PowerShell" -name 'snp' -value 'Start new powershell'
+Add-ToFunctionList -category 'PowerShell' -name 'snp' -value 'Start new powershell'
 
 
 
 
 $subDirUtils = @{
-  current     = 0 ; 
-  root        = Get-FullPath;
-  directories = (Get-ChildItem -Directory).name;
-  dirCount    = 0;
+  current     = 0
+  root        = Get-FullPath
+  directories = (Get-ChildItem -Directory).name
+  dirCount    = 0
   initialized = $false
 }
 
-# TODO: Check if this function is completed - If not: Complete it
+# TODO: Check If this function is completed - If not: Complete it
 function _openAllSubDirs_continue {
-  If ( $subDirUtils.dirCount -eq 0 ) { Return OUT $(PE -txt:"No subdirectories found" -fg:$global:colors.Red) }
-  If ( $subDirUtils.current -eq $subDirUtils.dirCount ) { Return OUT $(PE -txt:"Finished" -fg:$global:colors.Red) }
+  If ( $subDirUtils.dirCount -eq 0 ) { Return OUT $(PE -txt:'No subdirectories found' -fg:$global:colors.Red) }
+  If ( $subDirUtils.current -eq $subDirUtils.dirCount ) { Return OUT $(PE -txt:'Finished' -fg:$global:colors.Red) }
 
   $currentDir = $subDirUtils.directories[$subDirUtils.current]
   Write-Host -ForegroundColor Cyan "Current directory: $($subDirUtils.current+1)/$($subDirUtils.dirCount) `n  $currentDir `n"
@@ -183,22 +184,22 @@ function _openAllSubDirs_continue {
   $subDirUtils.current += 1
 }
 
-# TODO: Check if this function is completed - If not: Complete it
+# TODO: Check If this function is completed - If not: Complete it
 function _openAllSubDirs_init {
   $subDirUtils.current = 0
   $subDirUtils.root = Get-FullPath
   $subDirUtils.directories = (Get-ChildItem -Directory).name
   $subDirUtils.dirCount = $($subDirUtils.directories).Count
   $subDirUtils.initialized = $True
-  
+
   Write-Host -ForegroundColor Cyan "
-    Started 'openAllSubDirs -Init'. This will Set-Location for every subdirectory in current directory ($($subDirUtils.dirCount) times). 
-    NOTE: This function does not handle recursion, and will reset if run again with 'init'-parameter!
+    Started 'openAllSubDirs -Init'. This will Set-Location for every subdirectory in current directory ($($subDirUtils.dirCount) times).
+    NOTE: This function does not handle recursion, and will reset If run again with 'init'-parameter!
 
     Run 'openAllSubDirs' to precede to the next subdirectory.`n"
 }
 
-# TODO: Check if this function is completed - If not: Complete it
+# TODO: Check If this function is completed - If not: Complete it
 function openAllSubDirs {
   param( [switch]$Init = $False )
   If ( $Init -or (-not $subDirUtils.initialized) ) { _openAllSubDirs_init }

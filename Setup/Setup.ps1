@@ -3,9 +3,9 @@
 $sw = [Diagnostics.Stopwatch]::new()
 $log = [System.Text.StringBuilder]::new()
 function logTime {
-  param( 
+  param(
     [Parameter(Mandatory)][String]$timed,
-    [bool]$restart = $true 
+    [bool]$restart = $true
   )
   $sw.Stop()
   [void]$log.AppendFormat(" {1:0.000}s - {0}`n", $timed, $($sw.ElapsedMilliseconds / 1000))
@@ -21,28 +21,28 @@ $setupRoot = $PSScriptRoot
 
 $sw.Start()
 . (Resolve-Path "$global:AWI/Constants/Constants.ps1")
-logTime "Import Constants"
+logTime 'Import Constants'
 
 . (Resolve-Path "$setupRoot\CustomPrompt.ps1")
-logTime "Import CustomPrompt"
+logTime 'Import CustomPrompt'
 
 . (Resolve-Path "$global:AWI/FunctionListGenerator/FunctionListGenerator.ps1")
-logTime "Import FunctionListGenerator"
+logTime 'Import FunctionListGenerator'
 
 . (Resolve-Path "$global:AWI/Functions/Functions.ps1")
-logTime "Import Functions"
+logTime 'Import Functions'
 
 #. (Resolve-Path "$global:AWI/Installer/Installer.ps1")
 #logTime "Import Installer"
 
 . (Resolve-Path "$global:AWI/Logo/Logo.ps1")
-logTime "Import Logo"
+logTime 'Import Logo'
 
 . (Resolve-Path "$global:AWI/SystemDependent/SystemDependentSetup.ps1")
-logTime "Import SystemDependent"
+logTime 'Import SystemDependent'
 
 . (Resolve-Path "$setupRoot/ExternalInstallation/ExternalInstallation.ps1")
-logTime "Import ExternalInstallation"
+logTime 'Import ExternalInstallation'
 
 
 ###############################
@@ -50,19 +50,19 @@ logTime "Import ExternalInstallation"
 ###############################
 
 Initialize-FunctionListGenerator
-logTime "Initialize ListGenerator"
+logTime 'Initialize ListGenerator'
 
 Get-Logo
-logTime "Get Logo"
+logTime 'Get Logo'
 
 Get-FunctionListInfo
-logTime "Get FunctionListCommand"
+logTime 'Get FunctionListCommand'
 
 Get-UpgradeListsInfo
-logTime "Get UpgradeListCommand"
+logTime 'Get UpgradeListCommand'
 
 Get-DadJoke
-logTime "Get DadJoke" -restart $false
+logTime 'Get DadJoke' -restart $false
 
 # To show time-log: Uncomment the following line
 # Write-Host -ForegroundColor Cyan $log.ToString()
@@ -95,9 +95,9 @@ function timeTesting {
   $testingStopwatch = [Diagnostics.Stopwatch]::new()
   $testingTimerLog = [System.Text.StringBuilder]::new()
   function logTestingTime {
-    param( 
+    param(
       [Parameter(Mandatory)][String]$timed,
-      [bool]$restart = $true 
+      [bool]$restart = $true
     )
     $testingStopwatch.Stop()
     [void]$testingTimerLog.AppendFormat(" {1:0.000000}s - {0}`n", $timed, $($testingStopwatch.ElapsedMilliseconds / 1000))
@@ -108,14 +108,14 @@ function timeTesting {
 
   $testingStopwatch.Start()
 
-  "Log some code"
-  logTestingTime "Get git status"
-  
-  "Log some other code"
-  logTestingTime "Get localBranch"
-  
-  "Log some final code"
-  logTestingTime "Get-GitPrompt2" -restart $false
+  'Log some code'
+  logTestingTime 'Get git status'
+
+  'Log some other code'
+  logTestingTime 'Get localBranch'
+
+  'Log some final code'
+  logTestingTime 'Get-GitPrompt2' -restart $false
 
   Write-Host -ForegroundColor Cyan $testingTimerLog.ToString()
   [void]$testingTimerLog.Clear()

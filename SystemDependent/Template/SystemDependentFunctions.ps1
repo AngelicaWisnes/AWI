@@ -5,7 +5,7 @@
 
 
 # No system dependent functions are implemented yet
-Add-ToFunctionList -category "System" -Name "N/A" -Value "N/A"
+Add-ToFunctionList -category 'System' -Name 'N/A' -Value 'N/A'
 
 
 
@@ -14,7 +14,6 @@ Add-ToFunctionList -category "System" -Name "N/A" -Value "N/A"
 ########################################
 
 
-function SystemDependentGitCheckouts { 
-  OUT $(PE -txt:"No system dependent git checkouts are implemented" -fg:$global:colors.Cyan)
+function SystemDependentGitCheckouts {
+  OUT $(PE -txt:'No system dependent git checkouts are implemented' -fg:$global:colors.Cyan)
 }
-  
