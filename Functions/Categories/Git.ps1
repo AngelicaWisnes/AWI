@@ -315,6 +315,7 @@ function GitChooseLocalBranch {
   $(PE -txt:"`n`nEnter your choice: " -fg:$global:colors.Cyan) -NoNewline -NoNewlineStart
 
   $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
+  OUT
   If ($userInput.ToUpper() -eq 'M') { GitCheckout }
   Elseif (($userInput -match '^\d+$') -and ($userInput -in 0..$($localBranchNamesAsList.Length - 1))) { GitCheckout $localBranchNamesAsList[$userInput] }
   Else { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
@@ -348,22 +349,21 @@ function GitDeleteLocalBranchesDeletedFromRemote {
   git fetch --prune *> $null 2>&1
 
   OUT $(PE -txt:'These are the remote deleted branches:' -fg:$global:colors.Cyan)
-  $branches = git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | awk '$2 == "[gone]" {print $1}'
+  $branches = git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | ForEach-Object {
+    $parts = $_ -split ' '
+    If ($parts[1] -eq '[gone]') {
+      $parts[0]
+    }
+  }
 
-  If ($branches.length -eq 0) { Return OUT $(PE -txt:"`n`tNone" -fg:$global:colors.Cyan) }
-
-  $branches = $branches -split "`n" | ForEach-Object { OUT $(PE -txt:"`t$_" -fg:$global:colors.Cyan) -NoNewlineStart }
+  If ($branches.length -eq 0) { Return OUT $(PE -txt:"`tNone" -fg:$global:colors.Cyan) -NoNewlineStart }
+  $branches | ForEach-Object { OUT $(PE -txt:"`t$_" -fg:$global:colors.Cyan) -NoNewlineStart }
 
   OUT $(PE -txt:'Continue deleting these branches from local [Y/N (Default)]: ' -fg:$global:colors.Cyan) -NoNewline
   $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
   If ($userInput.ToUpper() -eq 'Y') {
     OUT
-    git for-each-ref --format '%(refname:short) %(upstream:track)' refs/heads | ForEach-Object {
-      $parts = $_ -split ' '
-      If ($parts[1] -eq '[gone]') {
-        $parts[0]
-      }
-    } | ForEach-Object { git branch -D $_ }
+    $branches | ForEach-Object { git branch -D $($_) }
   }
   Else { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
 }
@@ -378,11 +378,8 @@ function Get-CoverageReport {
   $coverageLineDivider = $jestOutput | Select-String -Pattern '^-{3,}' | Select-Object -First 1
 
   $firstLineColumnLength = ($coverageList[0].Matches[0].Value).Split('|')[0].Length
-  $totalNameLength = (($coverageList | ForEach-Object { $_.Matches[0].Value.Split('|')[0].Trim() }).ForEach({ $_.Length })
-    | Measure-Object -Maximum
-    | Select-Object -ExpandProperty Maximum) + 15
-
-  $numberOfSpacesToBeRemoved = $firstLineColumnLength - $totalNameLength
+  $totalNameLength = $coverageList | ForEach-Object { $_.Matches[0].Value.Split('|')[0].Trim().Length } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
+  $numberOfSpacesToBeRemoved = $firstLineColumnLength - ($totalNameLength + 15)
 
   $shortenedDivider = "`t|-" + ($coverageLineDivider -replace "-{$numberOfSpacesToBeRemoved}\|", '|') + "|`n"
   $shortenedHeader = "`t| " + ($coverageHeader -replace " {$numberOfSpacesToBeRemoved}\|", '|') + "|`n"

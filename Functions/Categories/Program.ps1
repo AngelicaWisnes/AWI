@@ -21,6 +21,12 @@ function Open-StartupFolders {
 Set-Alias su Open-StartupFolders
 Add-ToFunctionList -category 'Program' -name 'su' -value 'Open Startup Folders'
 
+function Open-UserAccessControlSettings {
+  Start-Process 'C:\Windows\System32\UserAccountControlSettings.exe'
+}
+Set-Alias uac Open-UserAccessControlSettings
+Add-ToFunctionList -category 'Program' -name 'uac' -value 'Open User Access Control Settings'
+
 
 function ide_dotNet { _startIDE $global:MY_DOTNET_IDE }
 Set-Alias dn ide_dotNet

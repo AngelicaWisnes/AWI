@@ -253,8 +253,9 @@ function Get-ColoredInput {
 function TestHexColor {
   param ([Parameter(Mandatory)][string]$hex )
   $color = Get-ColorFromHEX -hex:$hex
+  $rgb = Convert-HexToRgb -color:$color
 
-  OUT $(PE -txt:"TESTING COLOR`n$hex`n" -fg:$color), $(PE -txt:'             ' -bg:$color)
+  OUT $(PE -txt:"TESTING COLOR`n$hex`n R: $($rgb.r)   -   G: $($rgb.g)   -   B: $($rgb.b)`n" -fg:$color), $(PE -txt:'             ' -bg:$color)
 }
 Set-Alias thc TestHexColor
 Add-ToFunctionList -category 'Printing' -name 'thc' -value 'Test hex color'
