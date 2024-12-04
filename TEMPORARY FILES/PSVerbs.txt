@@ -1,0 +1,142 @@
+
+
+Common Verbs
+PowerShell uses the System.Management.Automation.VerbsCommon enumeration class to define generic actions that can apply to almost any cmdlet. The following table lists most of the defined verbs.
+
+Verb         [alias]      Synonyms to avoid                                                           Action	
+Add          [a]        	Append, Attach, Concatenate, Insert                                         Adds a resource to a container, or attaches an item to another item. For example, the Add-Content cmdlet adds content to a file. This verb is paired with Remove.
+Clear        [cl]        	Flush, Erase, Release, Unmark, Unset, Nullify                               Removes all the resources from a container but does not delete the container. For example, the Clear-Content cmdlet removes the contents of a file but does not delete the file.
+Close        [cs]        	                                                                            Changes the state of a resource to make it inaccessible, unavailable, or unusable. This verb is paired with Open.
+Copy         [cp]        	Duplicate, Clone, Replicate, Sync                                           Copies a resource to another name or to another container. For example, the Copy-Item cmdlet copies an item (such as a file) from one location in the data store to another location.
+Enter        [et]        	Push, Into                                                                  Specifies an action that allows the user to move into a resource. For example, the Enter-PSSession cmdlet places the user in an interactive session. This verb is paired with Exit.
+Exit         [ex]        	Pop, Out                                                                    Sets the current environment or context to the most recently used context. For example, the Exit-PSSession cmdlet places the user in the session that was used to start the interactive session. This verb is paired with Enter.
+Find         [fd]        	Search                                                                      Looks for an object in a container that is unknown, implied, optional, or specified.
+Format       [f]                                                                                      Arranges objects in a specified form or layout	
+Get          [g]        	Read, Open, Cat, Type, Dir, Obtain, Dump, Acquire, Examine, Find, Search    Specifies an action that retrieves a resource. This verb is paired with Set.
+Hide         [h]        	Block                                                                       Makes a resource undetectable. For example, a cmdlet whose name includes the Hide verb might conceal a service from a user. This verb is paired with Show.
+Join         [j]        	Combine, Unite, Connect, Associate                                          Combines resources into one resource. For example, the Join-Path cmdlet combines a path with one of its child paths to create a single path. This verb is paired with Split.
+Lock         [lk]        	Restrict, Secure                                                            Secures a resource. This verb is paired with Unlock.
+Move         [m]        	Transfer, Name, Migrate                                                     Moves a resource from one location to another. For example, the Move-Item cmdlet moves an item from one location in the data store to another location.
+New          [n]                                                                                      Creates a resource. (The Set verb can also be used when creating a resource that includes data, such as the Set-Variable cmdlet.)	Create, Generate, Build, Make, Allocate
+Open         [op]        	                                                                            Changes the state of a resource to make it accessible, available, or usable. This verb is paired with Close.
+Optimize     [om]        	                                                                            Increases the effectiveness of a resource.
+Pop          [pop]        	                                                                          Removes an item from the top of a stack. For example, the Pop-Location cmdlet changes the current location to the location that was most recently pushed onto the stack.
+Push         [pu]        	                                                                            Adds an item to the top of a stack. For example, the Push-Location cmdlet pushes the current location onto the stack.
+Redo         [re]        	                                                                            Resets a resource to the state that was undone.
+Remove       [r]        	Clear, Cut, Dispose, Discard, Erase                                         Deletes a resource from a container. For example, the Remove-Variable cmdlet deletes a variable and its value. This verb is paired with Add.
+Rename       [rn]        	Change                                                                      Changes the name of a resource. For example, the Rename-Item cmdlet, which is used to access stored data, changes the name of an item in the data store.
+Reset        [rs]        	                                                                            Sets a resource back to its original state.
+Resize       [rz]        	                                                                            Changes the size of a resource.
+Search       [sr]        	Find, Locate                                                                Creates a reference to a resource in a container.
+Select       [sc]        	Find, Locate                                                                Locates a resource in a container. For example, the Select-String cmdlet finds text in strings and files.
+Set          [s]        	Write, Reset, Assign, Configure, Update                                     Replaces data on an existing resource or creates a resource that contains some data. For example, the Set-Date cmdlet changes the system time on the local computer. (The New verb can also be used to create a resource.) This verb is paired with Get.
+Show         [sh]        	Display, Produce                                                            Makes a resource visible to the user. This verb is paired with Hide.
+Skip         [sk]        	Bypass, Jump                                                                Bypasses one or more resources or points in a sequence.
+Split        [sl]        	Separate                                                                    Separates parts of a resource. For example, the Split-Path cmdlet returns different parts of a path. This verb is paired with Join.
+Step         [st]        	                                                                            Moves to the next point or resource in a sequence.
+Switch       [sw]        	                                                                            Specifies an action that alternates between two resources, such as to change between two locations, responsibilities, or states.
+Undo         [un]        	                                                                            Sets a resource to its previous state.
+Unlock       [uk]        	Release, Unrestrict, Unsecure                                               Releases a resource that was locked. This verb is paired with Lock.
+Watch        [wc]          	                                                                          Continually inspects or monitors a resource for changes.
+
+
+Communications Verbs
+PowerShell uses the System.Management.Automation.VerbsCommunications class to define actions that apply to communications. The following table lists most of the defined verbs.
+
+Verb         [alias]      Synonyms to avoid                                  Action	
+Connect      [cc]         Join, Telnet, Login                                Creates a link between a source and a destination. This verb is paired with Disconnect.
+Disconnect   [dc]         Break, Logoff                                      Breaks the link between a source and a destination. This verb is paired with Connect.
+Read         [rd]         Acquire, Prompt, Get                               Acquires information from a source. This verb is paired with Write.
+Receive      [rc]         Read, Accept, Peek                                 Accepts information sent from a source. This verb is paired with Send.
+Send         [sd]         Put, Broadcast, Mail, Fax                          Delivers information to a destination. This verb is paired with Receive.
+Write        [wr]         Put, Print                                         Adds information to a target. This verb is paired with Read.
+
+
+Data Verbs
+PowerShell uses the System.Management.Automation.VerbsData class to define actions that apply to data handling. The following table lists most of the defined verbs.
+
+Verb Name    [alias]      Synonyms to avoid                                   Action	
+Backup       [ba]          Save, Burn, Replicate, Sync                        Stores data by replicating it.	                                                                                                                                                                                                                                                                
+Checkpoint   [ch]          Diff                                               Creates a snapshot of the current state of the data or of its configuration.	                                                                                                                                                                                                                  
+Compare      [cr]          Diff                                               Evaluates the data from one resource against the data from another resource.	                                                                                                                                                                                                                  
+Compress     [cm]          Compact                                            Compacts the data of a resource. Pairs with Expand.                                                                                                                                                                                                                                             
+Convert      [cv]          Change, Resize, Resample                           Changes the data from one representation to another when the cmdlet supports bidirectional conversion or when the cmdlet supports conversion between multiple data types.	                                                                                                                      
+ConvertFrom  [cf]          Export, Output, Out                                Converts one primary type of input (the cmdlet noun indicates the input) to one or more supported output types.	                                                                                                                                                                                
+ConvertTo    [ct]          Import, Input, In                                  Converts from one or more types of input to a primary output type (the cmdlet noun indicates the output type).	                                                                                                                                                                                
+Dismount     [dm]          Unmount, Unlink                                    Detaches a named entity from a location. This verb is paired with Mount.	                                                                                                                                                                                                                      
+Edit         [ed]          Update, Modify                                     Modifies existing data by adding or removing content.	Change,                                                                                                                                                                                                                                   
+Expand       [en]          Explode, Uncompress                                Restores the data of a resource that has been compressed to its original state. This verb is paired with Compress.	                                                                                                                                                                            
+Export       [ep]          Extract, Backup                                    Encapsulates the primary input into a persistent data store, such as a file, or into an interchange format. This verb is paired with Import.	                                                                                                                                                  
+Group        [gp]                                                             Arranges or associates one or more resources	                                                                                                                                                                                                                                                  
+Import       [ip]          BulkLoad, Load                                     Creates a resource from data that is stored in a persistent data store (such as a file) or in an interchange format. For example, the Import-CSV cmdlet imports data from a comma-separated value (CSV) file to objects that can be used by other cmdlets. This verb is paired with Export.	    
+Initialize   [in]          Erase, Init, Renew, Rebuild, Reinitialize, Setup   Prepares a resource for use, and sets it to a default state.	                                                                                                                                                                                                                                  
+Limit        [l]           Quota                                              Applies constraints to a resource.	                                                                                                                                                                                                                                                            
+Merge        [mg]          Combine, Join                                      Creates a single resource from multiple resources.	                                                                                                                                                                                                                                            
+Mount        [mt]          Connect                                            Attaches a named entity to a location. This verb is paired with Dismount.	                                                                                                                                                                                                                      
+Out          [o]                                                              Sends data out of the environment. For example, the Out-Printer cmdlet sends data to a printer.	                                                                                                                                                                                                
+Publish      [pb]          Deploy, Release, Install                           Makes a resource available to others. This verb is paired with Unpublish.	                                                                                                                                                                                                                      
+Restore      [rr]          Repair, Return, Undo, Fix                          Sets a resource to a predefined state, such as a state set by Checkpoint. For example, the Restore-Computer cmdlet starts a system restore on the local computer.	                                                                                                                              
+Save         [sv]                                                             Preserves data to avoid loss.	                                                                                                                                                                                                                                                                  
+Sync         [sy]          Replicate, Coerce, Match                           Assures that two or more resources are in the same state.	                                                                                                                                                                                                                                      
+Unpublish    [ub]          Uninstall, Revert, Hide                            Makes a resource unavailable to others. This verb is paired with Publish.	                                                                                                                                                                                                                      
+Update       [ud]          Refresh, Renew, Recalculate, Re-index              Brings a resource up-to-date to maintain its state, accuracy, conformance, or compliance. For example, the Update-FormatData cmdlet updates and adds formatting files to the current PowerShell console.	                                                                                      
+
+
+Diagnostic Verbs
+PowerShell uses the System.Management.Automation.VerbsDiagnostic class to define actions that apply to diagnostics. The following table lists most of the defined verbs.
+
+Verb         [alias]      Synonyms to avoid                                   Action	
+Debug        [db]         Diagnose                                            Examines a resource to diagnose operational problems.	                                                          
+Measure      [ms]         Calculate, Determine, Analyze                       Identifies resources that are consumed by a specified operation, or retrieves statistics about a resource.  	  
+Ping         [pi]                                                             Deprecated - Use the Test verb instead.	             	                                                          
+Repair       [rp]         Fix, Restore                                        Restores a resource to a usable condition	                                                                      
+Resolve      [rv]         Expand, Determine                                   Maps a shorthand representation of a resource to a more complete representation.	                              
+Test         [t]          Diagnose, Analyze, Salvage, Verify                  Verifies the operation or consistency of a resource.	                                                          
+Trace        [tr]         Track, Follow, Inspect, Dig                         Tracks the activities of a resource.	                                                                          
+
+
+Lifecycle Verbs
+PowerShell uses the System.Management.Automation.VerbsLifeCycle class to define actions that apply to the lifecycle of a resource. The following table lists most of the defined verbs.
+
+Verb         [alias]      Synonyms to avoid                                   Action	
+Approve      [ap]                                                             Confirms or agrees to the status of a resource or process.	
+Assert       [as]         Certify                                             Affirms the state of a resource.	
+Build        [bd]                                                             Creates an artifact (usually a binary or document) out of some set of input files (usually source code or declarative documents.) This verb was added in PowerShell 6.	
+Complete     [cp]                                                             Concludes an operation.	
+Confirm      [cn]         Acknowledge, Agree, Certify, Validate, Verify       Acknowledges, verifies, or validates the state of a resource or process.	
+Deny         [dn]         Block, Object, Refuse, Reject                       Refuses, objects, blocks, or opposes the state of a resource or process.	
+Deploy       [dp]                                                             Sends an application, website, or solution to a remote target[s] in such a way that a consumer of that solution can access it after deployment is complete. This verb was added in PowerShell 6.	
+Disable      [d]          Halt, Hide                                          Configures a resource to an unavailable or inactive state. For example, the Disable-PSBreakpoint cmdlet makes a breakpoint inactive. This verb is paired with Enable.	
+Enable       [e]          Start, Begin                                        Configures a resource to an available or active state. For example, the Enable-PSBreakpoint cmdlet makes a breakpoint active. This verb is paired with Disable.	
+Install      [is]         Setup                                               Places a resource in a location, and optionally initializes it. This verb is paired with Uninstall.	
+Invoke       [i]          Run, Start                                          Performs an action, such as running a command or a method.	
+Register     [rg]                                                             Creates an entry for a resource in a repository such as a database. This verb is paired with Unregister.	
+Request      [rq]                                                             Asks for a resource or asks for permissions.	
+Restart      [rt]         Recycle                                             Stops an operation and then starts it again. For example, the Restart-Service cmdlet stops and then starts a service.	
+Resume       [ru]                                                             Starts an operation that has been suspended. For example, the Resume-Service cmdlet starts a service that has been suspended. This verb is paired with Suspend.	
+Start        [sa]         Launch, Initiate, Boot                              Initiates an operation. For example, the Start-Service cmdlet starts a service. This verb is paired with Stop.	
+Stop         [sp]         End, Kill, Terminate, Cancel                        Discontinues an activity. This verb is paired with Start.	
+Submit       [sb]         Post                                                Presents a resource for approval.	
+Suspend      [ss]         Pause                                               Pauses an activity. For example, the Suspend-Service cmdlet pauses a service. This verb is paired with Resume.	
+Uninstall    [us]                                                             Removes a resource from an indicated location. This verb is paired with Install.	
+Unregister   [ur]         Remove                                              Removes the entry for a resource from a repository. This verb is paired with Register.	
+Wait         [w]          Sleep, Pause                                        Pauses an operation until a specified event occurs. For example, the Wait-Job cmdlet pauses operations until one or more of the background jobs are complete.	
+
+
+Security Verbs
+PowerShell uses the System.Management.Automation.VerbsSecurity class to define actions that apply to security. The following table lists most of the defined verbs.
+
+Verb         [alias]      Synonyms to avoid                                   Action	
+Block        [bl]         Prevent, Limit, Deny                                Restricts access to a resource. This verb is paired with Unblock.	
+Grant        [gr]         Allow, Enable                                       Allows access to a resource. This verb is paired with Revoke.	
+Protect      [pt]         Encrypt, Safeguard, Seal                            Safeguards a resource from attack or loss. This verb is paired with Unprotect.	
+Revoke       [rk]         Remove, Disable                                     Specifies an action that does not allow access to a resource. This verb is paired with Grant.	
+Unblock      [ul]         Clear, Allow                                        Removes restrictions to a resource. This verb is paired with Block.	
+Unprotect    [up]         Decrypt, Unseal                                     Removes safeguards from a resource that were added to prevent it from attack or loss. This verb is paired with Protect.	
+
+
+Other Verbs
+PowerShell uses the System.Management.Automation.VerbsOther class to define canonical verb names that do not fit into a specific verb name category such as the common, communications, data, lifecycle, or security verb names verbs.
+
+Verb         [alias]      Synonyms to avoid     Action	
+Use          [u]                                Uses or includes a resource to do something.	
