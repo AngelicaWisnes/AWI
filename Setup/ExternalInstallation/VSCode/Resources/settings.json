@@ -93,8 +93,6 @@
     "powershell.codeFormatting.autoCorrectAliases": true,
     "powershell.codeFormatting.useConstantStrings": true,
     "powershell.codeFormatting.useCorrectCasing": true,
-
-    "workbench.colorTheme": "RedSpecter",
     "editor.guides.bracketPairs": "active",
     "editor.bracketPairColorization.enabled": true,
     "workbench.colorCustomizations": {
@@ -107,5 +105,6 @@
     "errorLens.infoGutterIconColor": "#a075ff",
     "errorLens.warningGutterIconColor": "#cfa900",
     "errorLens.errorGutterIconColor": "#cf0000",
-    "window.newWindowDimensions": "maximized"
+    "window.newWindowDimensions": "maximized",
+    "workbench.colorTheme": "RedSpecter"
 }

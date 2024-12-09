@@ -1,5 +1,5 @@
 aely-of-the-void.dark-magenta
-angelicawisnes.awi-red-specter
+angelicawisnes.redspecter
 arjun.swagger-viewer
 biomejs.biome
 cardinal90.multi-cursor-case-preserve
