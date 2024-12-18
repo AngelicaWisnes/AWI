@@ -1,5 +1,5 @@
 {
-  "workbench.editorAssociations": {
+    "workbench.editorAssociations": {
         "*.jar": "default"
     },
     "explorer.confirmDragAndDrop": false,
@@ -26,13 +26,7 @@
     "typescript.referencesCodeLens.enabled": true,
     "typescript.referencesCodeLens.showOnAllFunctions": true,
     "editor.linkedEditing": true,
-    "indentRainbow.indicatorStyle": "light",
-    "indentRainbow.lightIndicatorStyleLineWidth": 1,
-    "indentRainbow.colors": [
-        "rgba(255,0,128,.3)",
-        "rgba(255,50,255,.3)",
-        "rgba(255,155,200,.3)",
-    ],
+
     "turboConsoleLog.insertEmptyLineBeforeLogMessage": true,
     "turboConsoleLog.insertEmptyLineAfterLogMessage": true,
     "turboConsoleLog.logMessagePrefix": "",
@@ -95,16 +89,15 @@
     "powershell.codeFormatting.useCorrectCasing": true,
     "editor.guides.bracketPairs": "active",
     "editor.bracketPairColorization.enabled": true,
-    "workbench.colorCustomizations": {
-        "editorBracketHighlight.foreground1": "#d47069",
-        "editorBracketHighlight.foreground2": "#eb68a5",
-        "editorBracketHighlight.foreground3": "#8b63d6",
-        "editorBracketHighlight.unexpectedBracket.foreground": "#ff0000"
-    },
+
     "errorLens.hintGutterIconColor": "#2faf64",
     "errorLens.infoGutterIconColor": "#a075ff",
     "errorLens.warningGutterIconColor": "#cfa900",
     "errorLens.errorGutterIconColor": "#cf0000",
     "window.newWindowDimensions": "maximized",
-    "workbench.colorTheme": "RedSpecter"
+    "workbench.colorTheme": "RedSpecter",
+    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.rulers": [
+        120
+    ]
 }
