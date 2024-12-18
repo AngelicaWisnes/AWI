@@ -355,12 +355,12 @@ Add-ToFunctionList -category 'Git' -name 's' -value 'git status'
 
 function GitHandleBranches {
   If (-not (Test-IsGitRepo)) { Return }
-  
+
   Show-NavigableMenu -menuHeader:'Branch handling' -options:@(
     [NavigableMenuElement]@{trigger = 'C'; label = 'Checkout local branch'; action = { GitChooseLocalBranch } },
-    [NavigableMenuElement]@{trigger = 'R'; label = 'Rebase local branch'; action = { GitRebaseLocalBranch } }
-    [NavigableMenuElement]@{trigger = 'D'; label = 'Delete local branches that have been deleted from remote'; action = { GitDeleteLocalBranchesDeletedFromRemote } }
-    [NavigableMenuElement]@{trigger = 'N'; label = 'Create new local branch'; action = { GitCreateNewBranch } }
+    [NavigableMenuElement]@{trigger = 'R'; label = 'Rebase local branch'; action = { GitRebaseLocalBranch } },
+    [NavigableMenuElement]@{trigger = 'D'; label = 'Delete local branches that have been deleted from remote'; action = { GitDeleteLocalBranchesDeletedFromRemote } },
+    [NavigableMenuElement]@{trigger = 'N'; label = 'Create new local branch'; action = { GitCreateNewBranch } },
     [NavigableMenuElement]@{trigger = 'S'; label = 'System dependent branch handling'; action = { Get-SystemDependentGitCheckouts } }
   )
 }
