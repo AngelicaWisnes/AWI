@@ -163,6 +163,69 @@ Set-Alias snp Start-NewPowershell
 Add-ToFunctionList -category 'PowerShell' -name 'snp' -value 'Start new powershell'
 
 
+function Show-NavigableMenu {
+  param ( 
+    [Parameter(mandatory)][array]$options,
+    [string]$menuHeader = 'Menu'
+  )
+
+  $options += [NavigableMenuElement]@{label = '[Any] Cancel'; action = { return } }
+
+  $rewritableLines = "`n" * $options.Length
+  $lineWidth = (($options.label) | Measure-Object -Maximum -Property:Length).Maximum
+  $headerLine = '=' * ($lineWidth / 2)
+  OUT $(PE -txt:"$headerLine $menuHeader $headerLine $rewritableLines" -fg:$global:colors.White)
+  
+  $initialCursorPosition = [System.Console]::CursorTop - $options.Length
+  $initialCursorSize = $Host.UI.RawUI.CursorSize
+  $Host.UI.RawUI.CursorSize = 0
+
+  function printMenuWithCurrentSelectionHighlighted {
+    [System.Console]::SetCursorPosition(0, $initialCursorPosition)
+    for ($i = 0; $i -lt $options.Length; $i++) {
+      $option = $options[$i]
+      $label = If ($option.trigger) { "[$($option.trigger)] $($option.label)" } Else { $option.label }
+      If ($i -eq $currentSelection) { OUT $(PE -txt:">> $label" -fg:$global:colors.Cyan) -NoNewlineStart }
+      Elseif ($i -eq ($options.Length - 1)) { OUT $(PE -txt:"   $label" -fg:$global:colors.Yellow) -NoNewlineStart }
+      Else { OUT $(PE -txt:"   $label") -NoNewlineStart }
+    }
+  }
+  
+  $currentSelection = 0
+  :outerLoop while ($true) {
+    printMenuWithCurrentSelectionHighlighted
+    
+    # Read user input
+    $key = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
+
+    # Handle trigger key selection
+    for ($i = 0; $i -lt $options.Length; $i++) {
+      If ($options[$i].trigger -and ($options[$i].trigger -eq $key.Character.ToString().ToUpper())) { 
+        $currentSelection = $i
+        break outerLoop
+      }
+    }
+    
+    # Handle arrow key navigation
+    switch ($key.VirtualKeyCode) {
+      13 { break outerLoop }                                                          # Enter key
+      38 { If ($currentSelection -gt 0) { $currentSelection-- } }                     # Up arrow
+      40 { If ($currentSelection -lt ($options.Length - 1)) { $currentSelection++ } } # Down arrow
+      default {
+        $currentSelection = $options.Length - 1 
+        break outerLoop 
+      }                                                                               # Any other key
+    }
+  }
+  printMenuWithCurrentSelectionHighlighted
+
+  $selectedOption = $options[$currentSelection] 
+  If ($currentSelection -eq $options.Length - 1) { OUT $(PE -txt:'Canceling...' -fg:$global:colors.Red) }
+  Else { OUT $(PE -txt:"Executing...`n" -fg:$global:colors.Cyan) }
+  
+  $Host.UI.RawUI.CursorSize = $initialCursorSize
+  $selectedOption.action.Invoke()
+}
 
 
 $subDirUtils = @{

@@ -18,6 +18,7 @@ $global:RESET_SEQUENCE = "$global:RGB_SEQUENCE" -f '0'
 class RGB { [int]$r; [int]$g; [int]$b; }
 class COLOR { [string]$hex; [RGB]$rgb }
 class PrintElement { [string]$text; [RGB]$foreground; [RGB]$background; }
+class NavigableMenuElement { [char]$trigger; [string]$label; [scriptblock]$action; }
 
 
 # Colors
@@ -61,7 +62,7 @@ $global:colors = [ordered]@{
   System_DarkCyan    = [COLOR]@{ hex = '#008B8B'; rgb = [RGB]@{r = 0; g = 139; b = 139; }; }
   System_DarkRed     = [COLOR]@{ hex = '#8B0000'; rgb = [RGB]@{r = 139; g = 0; b = 0; }; }
   System_DarkMagenta = [COLOR]@{ hex = '#8B008B'; rgb = [RGB]@{r = 139; g = 0; b = 139; }; }
-  System_DarkYellow  = [COLOR]@{ hex = '#000000'; rgb = [RGB]@{r = 0; g = 0; b = 0; }; }
+  System_DarkYellow  = [COLOR]@{ hex = '#808000'; rgb = [RGB]@{r = 128; g = 128; b = 0; }; }
   System_Gray        = [COLOR]@{ hex = '#808080'; rgb = [RGB]@{r = 128; g = 128; b = 128; }; }
   System_DarkGray    = [COLOR]@{ hex = '#A9A9A9'; rgb = [RGB]@{r = 169; g = 169; b = 169; }; }
   System_Blue        = [COLOR]@{ hex = '#0000FF'; rgb = [RGB]@{r = 0; g = 0; b = 255; }; }
@@ -93,7 +94,7 @@ $global:colors = [ordered]@{
 }
 
 
-$global:colorChart = @{
+$global:colorChart = [ordered]@{
   rainbow     = @{
     fg = @( $colors.PrideRed, $colors.PrideOrange, $colors.PrideYellow, $colors.PrideGreen, $colors.PrideBlue, $colors.PridePurple )
     bg = $null
@@ -127,7 +128,7 @@ $global:colorChart = @{
     bg = ( $colors.Black )
   }
   colorfull   = @{
-    fg = @( $($global:colors.Values.GetEnumerator() | Select-Object -First 18))
+    fg = @( $($global:colors.Values.GetEnumerator() | Select-Object -First 19))
     bg = $null
   }
   randomColor = @{

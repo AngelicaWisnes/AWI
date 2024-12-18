@@ -354,63 +354,53 @@ Add-ToFunctionList -category 'Git' -name 's' -value 'git status'
 
 
 function GitHandleBranches {
-  OUT $(PE -txt:'Initiating branch handling:' -fg:$global:colors.Cyan),
-  $(PE -txt:"`n`t[C] Checkout local branch" -fg:$global:colors.Cyan),
-  $(PE -txt:"`n`t[R] Rebase local branch" -fg:$global:colors.Cyan),
-  $(PE -txt:"`n`t[D] Delete local branches that have been deleted from remote" -fg:$global:colors.Cyan),
-  $(PE -txt:"`n`t[N] Create new local branch" -fg:$global:colors.Cyan),
-  $(PE -txt:"`n`t[S] System dependent branch handling" -fg:$global:colors.Cyan),
-  $(PE -txt:"`n`t[Any] Cancel" -fg:$global:colors.Yellow),
-  $(PE -txt:"`n`nEnter your choice: " -fg:$global:colors.Cyan) -NoNewline
-
-  $userInput = $Host.UI.RawUI.ReadKey().Character
-  switch ($userInput.ToString().ToUpper()) {
-    'C' { GitChooseLocalBranch }
-    'R' { GitRebaseLocalBranch }
-    'D' { GitDeleteLocalBranchesDeletedFromRemote }
-    'N' { GitCreateNewBranch }
-    'S' { Get-SystemDependentGitCheckouts }
-    Default { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
-  }
+  If (-not (Test-IsGitRepo)) { Return }
+  
+  Show-NavigableMenu -menuHeader:'Branch handling' -options:@(
+    [NavigableMenuElement]@{trigger = 'C'; label = 'Checkout local branch'; action = { GitChooseLocalBranch } },
+    [NavigableMenuElement]@{trigger = 'R'; label = 'Rebase local branch'; action = { GitRebaseLocalBranch } }
+    [NavigableMenuElement]@{trigger = 'D'; label = 'Delete local branches that have been deleted from remote'; action = { GitDeleteLocalBranchesDeletedFromRemote } }
+    [NavigableMenuElement]@{trigger = 'N'; label = 'Create new local branch'; action = { GitCreateNewBranch } }
+    [NavigableMenuElement]@{trigger = 'S'; label = 'System dependent branch handling'; action = { Get-SystemDependentGitCheckouts } }
+  )
 }
 Set-Alias b GitHandleBranches
 Add-ToFunctionList -category 'Git' -name 'b' -value 'Git handle branches'
 
 
 function GitChooseLocalBranch {
-  OUT $(PE -txt:'Initiating checkout local branch:' -fg:$global:colors.Cyan)
+  If (-not (Test-IsGitRepo)) { Return }
 
   $localBranchNamesAsList = (git branch --format="%(refname:short)").Split("`n")
+  $numberOfBranches = $localBranchNamesAsList.Length
+  If ($numberOfBranches -eq 0) { Return OUT $(PE -txt:'No local branches found' -fg:$global:colors.Red) }
 
-  For ($i = 0; $i -lt $localBranchNamesAsList.length; $i++) { OUT $(PE -txt:"`t[$i] $($localBranchNamesAsList[$i])" -fg:$global:colors.Cyan) -NoNewlineStart }
-  OUT $(PE -txt:"`t[M] Enter branch name manually" -fg:$global:colors.Cyan),
-  $(PE -txt:"`n`t[Any] Cancel " -fg:$global:colors.Yellow),
-  $(PE -txt:"`n`nEnter your choice: " -fg:$global:colors.Cyan) -NoNewline -NoNewlineStart
-
-  $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
-  OUT
-  If ($userInput.ToUpper() -eq 'M') { GitCheckout }
-  Elseif (($userInput -match '^\d+$') -and ($userInput -in 0..$($localBranchNamesAsList.Length - 1))) { GitCheckout $localBranchNamesAsList[$userInput] }
-  Else { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
+  $options = $localBranchNamesAsList | ForEach-Object {
+    $trigger = If ($localBranchNamesAsList.IndexOf($_) -lt 10) { $localBranchNamesAsList.IndexOf($_).ToString() } Else { $null }
+    [NavigableMenuElement]@{ trigger = $trigger; label = $_; action = [scriptblock]::Create("GitCheckout '$_'") }
+  }
+  $options += [NavigableMenuElement]@{ trigger = 'M'; label = 'Enter branch name manually'; action = { GitCheckout } }
+  
+  Show-NavigableMenu -menuHeader:'Checkout local branch' -options:$options
 }
 Set-Alias cob GitChooseLocalBranch
 Add-ToFunctionList -category 'Git' -name 'cob' -value 'Git choose local branch'
 
 
 function GitRebaseLocalBranch {
-  OUT $(PE -txt:'Initiating rebase local branch:' -fg:$global:colors.Cyan)
+  If (-not (Test-IsGitRepo)) { Return }
 
   $localBranchNamesAsList = (git branch --format="%(refname:short)").Split("`n")
+  $numberOfBranches = $localBranchNamesAsList.Length
+  If ($numberOfBranches -eq 0) { Return OUT $(PE -txt:'No local branches found' -fg:$global:colors.Red) }
 
-  For ($i = 0; $i -lt $localBranchNamesAsList.length; $i++) { OUT $(PE -txt:"`t[$i] $($localBranchNamesAsList[$i])" -fg:$global:colors.Cyan) -NoNewlineStart }
-  OUT $(PE -txt:"`t[M] Enter branch name manually" -fg:$global:colors.Cyan),
-  $(PE -txt:"`n`t[Any] Cancel " -fg:$global:colors.Yellow),
-  $(PE -txt:"`n`nEnter your choice: " -fg:$global:colors.Cyan) -NoNewline -NoNewlineStart
-
-  $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
-  If ($userInput.ToUpper() -eq 'M') { GitRebase }
-  Elseif (($userInput -match '^\d+$') -and ($userInput -in 0..$($localBranchNamesAsList.Length - 1))) { GitRebase $($localBranchNamesAsList[$userInput]) }
-  Else { OUT $(PE -txt:"`nCancelling" -fg:$global:colors.Cyan) }
+  $options = $localBranchNamesAsList | ForEach-Object {
+    $trigger = If ($localBranchNamesAsList.IndexOf($_) -lt 10) { $localBranchNamesAsList.IndexOf($_).ToString() } Else { $null }
+    [NavigableMenuElement]@{ trigger = $trigger; label = $_; action = [scriptblock]::Create("GitRebase '$_'") }
+  }
+  $options += [NavigableMenuElement]@{ trigger = 'M'; label = 'Enter branch name manually'; action = { GitRebase } }
+  
+  Show-NavigableMenu -menuHeader:'Rebase local branch' -options:$options
 }
 Set-Alias rlb GitRebaseLocalBranch
 Add-ToFunctionList -category 'Git' -name 'rlb' -value 'Git rebase local branch'
