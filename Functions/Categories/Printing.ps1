@@ -127,9 +127,9 @@ function Get-ImplementedRGBColors {
   foreach ($color in $colors.GetEnumerator()) {
     $rgb = Get-Rgb $color.value
     $colorName = '{0, 20} ' -f $color.Name
-    $hexAndRgbValue = ' HEX: {0}   RGB: {1, 3}, {2, 3}, {3, 3}' -f $color.value.hex, $rgb.r, $rgb.g, $rgb.b
+    $hexAndRgbValue = 'HEX: {0}   RGB: {1, 3}, {2, 3}, {3, 3}' -f $color.value.hex, $rgb.r, $rgb.g, $rgb.b
 
-    OUT $(PE -txt:$colorName), $(PE -txt:$sample -bg:$rgb), $(PE -txt:$hexAndRgbValue)
+    OUT $(PE -txt:$colorName), $(PE -txt:$sample -bg:$rgb), $(PE -txt:"`tSample TEXT`t" -fg:$rgb), $(PE -txt:$hexAndRgbValue)
   }
 }
 Set-Alias implColors Get-ImplementedRGBColors
@@ -141,8 +141,9 @@ function Get-ColorCharts {
   $windowWidth, $_ = Get-WindowDimensions
   $spaceLength = (' ' * $windowWidth)
 
-  foreach ($chart in $global:colorChart.Values) {
-    foreach ($color in $chart.fg) {
+  foreach ($chart in $global:colorChart.GetEnumerator()) {
+    OUT $(PE -txt:$chart.Name)
+    foreach ($color in $chart.value.fg) {
       OUT $(PE -txt:$spaceLength -bg:$color) -NoNewlineStart
     }
     Write-Host "`n`n"
