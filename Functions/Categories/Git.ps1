@@ -1,8 +1,17 @@
 
 #########################
-# Git-realted functions #
+# Git-related functions #
 #########################
+
+function Test-IsGitRepo { 
+  $isGitRepo = git rev-parse --is-inside-work-tree 
+  If (-not $isGitRepo) { OUT $(PE -txt:'This is not a git repository' -fg:$global:colors.Red) }
+  Return $isGitRepo
+}
+
+
 function GitAddAllOrArg {
+  If (-not (Test-IsGitRepo)) { Return }
   If ($args.Length -eq 0) { git add . }
   Else { git add $args }
   Get-GitStatusStandard
@@ -12,6 +21,7 @@ Add-ToFunctionList -category 'Git' -name 'a' -value 'git add args'
 
 
 function GitCreateNewBranch {
+  If (-not (Test-IsGitRepo)) { Return }
   OUT $(PE -txt:"Initiating git checkout -b `n`tName-length  $global:FIFTY_CHARS `n`tBranch-name: ") -NoNewline
 
   $branchName = Get-ColoredInput
@@ -24,12 +34,16 @@ Set-Alias gcb GitCreateNewBranch
 Add-ToFunctionList -category 'Git' -name 'gcb' -value 'git checkout -b'
 
 
-function GitCommit { git commit }
+function GitCommit { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git commit 
+}
 Set-Alias c GitCommit
 Add-ToFunctionList -category 'Git' -name 'c' -value 'git commit'
 
 
 function GitCommitWithMessage {
+  If (-not (Test-IsGitRepo)) { Return }
   OUT $(PE -txt:"Initiating git commit -m `n`tMessage-length  $global:FIFTY_CHARS `n`tCommit message: ") -NoNewline
 
   $commitMessage = Get-ColoredInput
@@ -43,7 +57,15 @@ Add-ToFunctionList -category 'Git' -name 'cm' -value 'git commit -m'
 
 
 function GitCheckout {
-  param( [Parameter(Mandatory)][string]$argToCheckout )
+  param( [string]$argToCheckout )
+  If (-not (Test-IsGitRepo)) { Return }
+
+  If (-not $argToCheckout) {
+    OUT $(PE -txt:"No checkout-argument provided. Enter manually:`n`tCheckout-argument: " -fg:$global:colors.Cyan) -NoNewline
+    $argToCheckout = Get-ColoredInput
+  }
+
+  OUT $(PE -txt:"Initializing following:`n`tgit checkout $argToCheckout" -fg:$global:colors.Cyan)
   git checkout $argToCheckout
 }
 Set-Alias co GitCheckout
@@ -52,6 +74,13 @@ Add-ToFunctionList -category 'Git' -name 'co' -value 'git checkout args'
 
 function GitRebase {
   param( [Parameter(Mandatory)][string]$argToRebase )
+  If (-not (Test-IsGitRepo)) { Return }
+
+  If (-not $argToRebase) {
+    OUT $(PE -txt:"No rebase-argument provided. Enter manually:`n`Rebase-argument: " -fg:$global:colors.Cyan) -NoNewline
+    $argToRebase = Get-ColoredInput
+  }
+
   OUT $(PE -txt:"Initializing following:`n`tgit rebase $argToRebase" -fg:$global:colors.Cyan)
   git rebase $argToRebase
 }
@@ -59,12 +88,18 @@ Set-Alias gra GitRebase
 Add-ToFunctionList -category 'Git' -name 'gra' -value 'git rebase args'
 
 
-function GitCheckoutPrevious { git checkout - }
+function GitCheckoutPrevious { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git checkout - 
+}
 Set-Alias co- GitCheckoutPrevious
 Add-ToFunctionList -category 'Git' -name 'co-' -value 'git checkout -'
 
 
-function GitCheckoutDevelop { git checkout develop }
+function GitCheckoutDevelop { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git checkout develop 
+}
 Set-Alias d GitCheckoutDevelop
 Add-ToFunctionList -category 'Git' -name 'd' -value 'git checkout develop'
 
@@ -73,12 +108,16 @@ Set-Alias g git
 Add-ToFunctionList -category 'Git' -name 'g' -value 'git'
 
 
-function Get-CurrentGitBranch { git rev-parse --abbrev-ref HEAD }
+function Get-CurrentGitBranch { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git rev-parse --abbrev-ref HEAD 
+}
 Set-Alias gb Get-CurrentGitBranch
 Add-ToFunctionList -category 'Git' -name 'gb' -value 'Get current git branch'
 
 
 function Get-MasterBranch {
+  If (-not (Test-IsGitRepo)) { Return }
   $output = git symbolic-ref --short refs/remotes/origin/HEAD 2>$null
   If ($output) { Return [System.IO.Path]::GetFileName($output.Trim()) }
   Else { Return Write-Host 'Failed to retrieve master branch.' }
@@ -87,12 +126,16 @@ Set-Alias gmb Get-MasterBranch
 Add-ToFunctionList -category 'Git' -name 'gmb' -value 'Get git master branch'
 
 
-function Get-TotalLineCountInRepo { git diff --stat $(git hash-object -t tree /dev/null) }
+function Get-TotalLineCountInRepo { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git diff --stat $(git hash-object -t tree /dev/null) 
+}
 Set-Alias glc Get-TotalLineCountInRepo
 Add-ToFunctionList -category 'Git' -name 'glc' -value 'Get total line count in repo'
 
 
 function GitCombinePreviousCommits {
+  If (-not (Test-IsGitRepo)) { Return }
   git log -n 5
   OUT $(PE -txt:"Initiating 'git reset --soft <hash>' to combine all commits done after given hash
   `tPlease provide the commit-hash belonging to the last commit
@@ -112,6 +155,7 @@ Add-ToFunctionList -category 'Git' -name 'gcpc' -value 'Combine previous commits
 
 
 function GitDeleteCurrentBranch {
+  If (-not (Test-IsGitRepo)) { Return }
   $currentGitBranch = Get-CurrentGitBranch
   $title = "$(Get-FunctionDefinitionAsString GitCheckoutMaster)  git branch -d $currentGitBranch `n  git push origin --delete $currentGitBranch"
   $question = 'Are you sure you want to proceed?'
@@ -133,6 +177,7 @@ Add-ToFunctionList -category 'Git' -name 'gd' -value 'Delete current branch (loc
 
 
 function GitMergeCurrentIntoMaster {
+  If (-not (Test-IsGitRepo)) { Return }
   $currentBranch = Get-CurrentGitBranch
   GitCheckoutMaster
   git merge $currentBranch
@@ -141,12 +186,16 @@ Set-Alias gmc GitMergeCurrentIntoMaster
 Add-ToFunctionList -category 'Git' -name 'gmc' -value 'git merge current into master'
 
 
-function GitMergeArgs { git merge $args }
+function GitMergeArgs { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git merge $args 
+}
 Set-Alias gma GitMergeArgs
 Add-ToFunctionList -category 'Git' -name 'gme' -value 'git merge args'
 
 
 function GitMergeMaster {
+  If (-not (Test-IsGitRepo)) { Return }
   $masterBranch = Get-MasterBranch
   git merge $masterBranch
 }
@@ -154,12 +203,16 @@ Set-Alias gmm GitMergeMaster
 Add-ToFunctionList -category 'Git' -name 'gmm' -value 'git merge master'
 
 
-function GitPull { git pull }
+function GitPull { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git pull 
+}
 Set-Alias gpl GitPull
 Add-ToFunctionList -category 'Git' -name 'gpl' -value 'git pull'
 
 
 function GitPruneAndPull {
+  If (-not (Test-IsGitRepo)) { Return }
   GitPrune
   GitPull
 }
@@ -167,12 +220,16 @@ Set-Alias gppl GitPruneAndPull
 Add-ToFunctionList -category 'Git' -name 'gppl' -value 'git gc --prune=now && git pull'
 
 
-function GitHardReset { git reset --hard }
+function GitHardReset { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git reset --hard 
+}
 Set-Alias gr GitHardReset
 Add-ToFunctionList -category 'Git' -name 'gr' -value 'git reset --hard'
 
 
 function GitRenameBranch {
+  If (-not (Test-IsGitRepo)) { Return }
   OUT $(PE -txt:"Initiating a renaming of current branch. Enter the new branch name `n`tName-length  $global:FIFTY_CHARS `n`tBranch-name: ") -NoNewline
 
   $newBranchName = Get-ColoredInput
@@ -192,6 +249,7 @@ Add-ToFunctionList -category 'Git' -name 'grb' -value 'Rename git branch'
 
 
 function GitCheckoutMaster {
+  If (-not (Test-IsGitRepo)) { Return }
   $masterBranch = Get-MasterBranch
   git checkout $masterBranch
 }
@@ -204,6 +262,7 @@ function GitOpenBranchInBrowser {
     [string]$repo = $(Get-CurrentRepo),
     [string]$currentGitBranch = $(Get-CurrentGitBranch)
   )
+  If (-not (Test-IsGitRepo)) { Return }
   Start-Process $global:MY_BROWSER -ArgumentList $(Get-GitBranchUrl -repo $repo -branch $currentGitBranch)
 }
 Set-Alias ob GitOpenBranchInBrowser
@@ -215,6 +274,7 @@ function Get-GitBranchUrl {
     [Parameter(Mandatory)][string]$repo,
     [Parameter(Mandatory)][string]$branch
   )
+  If (-not (Test-IsGitRepo)) { Return }
   If ($global:GIT_BRANCH_URL.Contains('{1}')) { Return $global:GIT_BRANCH_URL -f $repo, $branch }
   Else { Return $global:GIT_BRANCH_URL -f $repo }
 }
@@ -222,17 +282,24 @@ Set-Alias gbu Get-GitBranchUrl
 Add-ToFunctionList -category 'Git' -name 'gbu' -value 'Get url for current git-branch'
 
 
-function GitPush { git push }
+function GitPush { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git push 
+}
 Set-Alias p GitPush
 Add-ToFunctionList -category 'Git' -name 'p' -value 'git push'
 
 
-function GitPushForce { git push --force-with-lease }
+function GitPushForce { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git push --force-with-lease 
+}
 Set-Alias pf GitPushForce
 Add-ToFunctionList -category 'Git' -name 'pf' -value 'git push --force-with-lease'
 
 
 function GitPushAndOpenBranchInBrowser {
+  If (-not (Test-IsGitRepo)) { Return }
   GitPush
   GitOpenBranchInBrowser
 }
@@ -241,6 +308,7 @@ Add-ToFunctionList -category 'Git' -name 'po' -value 'git push && Open git-branc
 
 
 function GitSetUpstreamAndPush {
+  If (-not (Test-IsGitRepo)) { Return }
   $currentGitBranch = Get-CurrentGitBranch
   $title = "`tgit push --set-upstream origin $currentGitBranch"
   $question = 'Are you sure you want to proceed?'
@@ -259,12 +327,16 @@ Set-Alias pu GitSetUpstreamAndPush
 Add-ToFunctionList -category 'Git' -name 'pu' -value 'git push --set-upstream origin'
 
 
-function GitPrune { git gc --prune=now }
+function GitPrune { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git gc --prune=now 
+}
 Set-Alias gpr GitPrune
 Add-ToFunctionList -category 'Git' -name 'gpr' -value 'git gc --prune=now'
 
 
 function GitQuickCommitAll {
+  If (-not (Test-IsGitRepo)) { Return }
   git add .
   git commit -m 'Various small changes'
 }
@@ -273,6 +345,7 @@ Add-ToFunctionList -category 'Git' -name 'qca' -value 'Quick-Commit all'
 
 
 function Get-GitStatusStandard {
+  If (-not (Test-IsGitRepo)) { Return }
   git fetch
   git status
 }
@@ -344,6 +417,7 @@ Add-ToFunctionList -category 'Git' -name 'rlb' -value 'Git rebase local branch'
 
 
 function GitDeleteLocalBranchesDeletedFromRemote {
+  If (-not (Test-IsGitRepo)) { Return }
   OUT $(PE -txt:'Initiating deletion of local branches that have been deleted from remote: ' -fg:$global:colors.Cyan)
 
   git fetch --prune *> $null 2>&1
@@ -371,8 +445,9 @@ Set-Alias dlb GitDeleteLocalBranchesDeletedFromRemote
 Add-ToFunctionList -category 'Git' -name 'dlb' -value 'Git delete local branches deleted from remote'
 
 function Get-CoverageReport {
+  If (-not (Test-IsGitRepo)) { Return }
   $jestOutput = pnpm jest --coverage --coverageReporters=text --silent
-
+  
   $coverageHeader = $jestOutput | Select-String -Pattern '^File\s+\|'
   $coverageList = $jestOutput | Select-String -Pattern '^\s*\S+\.\S+\s+\|\s+\d+' | Where-Object { $_ -notmatch '^\*\*' }
   $coverageLineDivider = $jestOutput | Select-String -Pattern '^-{3,}' | Select-Object -First 1
@@ -405,6 +480,7 @@ Set-Alias gcr Get-CoverageReport
 Add-ToFunctionList -category 'Git' -name 'gcr' -value 'Get jest coverage report'
 
 function Set-TokenizedRemoteURL {
+  If (-not (Test-IsGitRepo)) { Return }
   OUT $(PE -txt:"`tGo to GitHub -> Profile -> Settings -> Developer Settings -> Personal access token, and generate a token. `n`tEnter token: ") -NoNewline
   $token = Get-ColoredInput
 
@@ -413,8 +489,14 @@ function Set-TokenizedRemoteURL {
 Set-Alias stru Set-TokenizedRemoteURL
 Add-ToFunctionList -category 'Git' -name 'stru' -value 'Set Remote URL w/personal access token'
 
-function Set-GitEditorToVSCode { git config --global core.editor 'code --wait --new-window' }
+function Set-GitEditorToVSCode { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git config --global core.editor 'code --wait --new-window' 
+}
 Add-ToFunctionList -category 'Git' -name 'Set-GitEditorToVSCode' -value 'Set git editor to VSCode'
-
-function Edit-GitConfig { git config --global --edit }
+  
+function Edit-GitConfig { 
+  If (-not (Test-IsGitRepo)) { Return }
+  git config --global --edit 
+}
 Add-ToFunctionList -category 'Git' -name 'Edit-GitConfig' -value 'Edit global git config'
