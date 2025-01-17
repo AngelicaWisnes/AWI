@@ -168,25 +168,26 @@ function Show-NavigableMenu {
     [Parameter(mandatory)][array]$options,
     [string]$menuHeader = 'Menu'
   )
+  $optionList = @()
+  foreach ($option in $options) { $optionList += $option }
+  $optionList += [NavigableMenuElement]@{label = '[Any] Cancel'; action = { return } }
 
-  $options += [NavigableMenuElement]@{label = '[Any] Cancel'; action = { return } }
-
-  $rewritableLines = "`n" * $options.Length
-  $lineWidth = (($options.label) | Measure-Object -Maximum -Property:Length).Maximum
+  $rewritableLines = "`n" * $optionList.Length
+  $lineWidth = (($optionList.label) | Measure-Object -Maximum -Property:Length).Maximum
   $headerLine = '=' * ($lineWidth / 2)
   OUT $(PE -txt:"$headerLine $menuHeader $headerLine $rewritableLines" -fg:$global:colors.White)
   
-  $initialCursorPosition = [System.Console]::CursorTop - $options.Length
+  $initialCursorPosition = [System.Console]::CursorTop - $optionList.Length
   $initialCursorSize = $Host.UI.RawUI.CursorSize
   $Host.UI.RawUI.CursorSize = 0
 
   function printMenuWithCurrentSelectionHighlighted {
     [System.Console]::SetCursorPosition(0, $initialCursorPosition)
-    for ($i = 0; $i -lt $options.Length; $i++) {
-      $option = $options[$i]
+    for ($i = 0; $i -lt $optionList.Length; $i++) {
+      $option = $optionList[$i]
       $label = If ($option.trigger) { "[$($option.trigger)] $($option.label)" } Else { $option.label }
       If ($i -eq $currentSelection) { OUT $(PE -txt:">> $label" -fg:$global:colors.Cyan) -NoNewlineStart }
-      Elseif ($i -eq ($options.Length - 1)) { OUT $(PE -txt:"   $label" -fg:$global:colors.Yellow) -NoNewlineStart }
+      Elseif ($i -eq ($optionList.Length - 1)) { OUT $(PE -txt:"   $label" -fg:$global:colors.Yellow) -NoNewlineStart }
       Else { OUT $(PE -txt:"   $label") -NoNewlineStart }
     }
   }
@@ -199,8 +200,8 @@ function Show-NavigableMenu {
     $key = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
 
     # Handle trigger key selection
-    for ($i = 0; $i -lt $options.Length; $i++) {
-      If ($options[$i].trigger -and ($options[$i].trigger -eq $key.Character.ToString().ToUpper())) { 
+    for ($i = 0; $i -lt $optionList.Length; $i++) {
+      If ($optionList[$i].trigger -and ($optionList[$i].trigger -eq $key.Character.ToString().ToUpper())) { 
         $currentSelection = $i
         break outerLoop
       }
@@ -210,17 +211,17 @@ function Show-NavigableMenu {
     switch ($key.VirtualKeyCode) {
       13 { break outerLoop }                                                          # Enter key
       38 { If ($currentSelection -gt 0) { $currentSelection-- } }                     # Up arrow
-      40 { If ($currentSelection -lt ($options.Length - 1)) { $currentSelection++ } } # Down arrow
+      40 { If ($currentSelection -lt ($optionList.Length - 1)) { $currentSelection++ } } # Down arrow
       default {
-        $currentSelection = $options.Length - 1 
+        $currentSelection = $optionList.Length - 1 
         break outerLoop 
       }                                                                               # Any other key
     }
   }
   printMenuWithCurrentSelectionHighlighted
 
-  $selectedOption = $options[$currentSelection] 
-  If ($currentSelection -eq $options.Length - 1) { OUT $(PE -txt:'Canceling...' -fg:$global:colors.Red) }
+  $selectedOption = $optionList[$currentSelection] 
+  If ($currentSelection -eq $optionList.Length - 1) { OUT $(PE -txt:'Canceling...' -fg:$global:colors.Red) }
   Else { OUT $(PE -txt:"Executing...`n" -fg:$global:colors.Cyan) }
   
   $Host.UI.RawUI.CursorSize = $initialCursorSize

@@ -96,14 +96,6 @@ Set-Alias co- GitCheckoutPrevious
 Add-ToFunctionList -category 'Git' -name 'co-' -value 'git checkout -'
 
 
-function GitCheckoutDevelop { 
-  If (-not (Test-IsGitRepo)) { Return }
-  git checkout develop 
-}
-Set-Alias d GitCheckoutDevelop
-Add-ToFunctionList -category 'Git' -name 'd' -value 'git checkout develop'
-
-
 Set-Alias g git
 Add-ToFunctionList -category 'Git' -name 'g' -value 'git'
 
@@ -356,13 +348,14 @@ Add-ToFunctionList -category 'Git' -name 's' -value 'git status'
 function GitHandleBranches {
   If (-not (Test-IsGitRepo)) { Return }
 
-  Show-NavigableMenu -menuHeader:'Branch handling' -options:@(
+  $options = @(
     [NavigableMenuElement]@{trigger = 'C'; label = 'Checkout local branch'; action = { GitChooseLocalBranch } },
     [NavigableMenuElement]@{trigger = 'R'; label = 'Rebase local branch'; action = { GitRebaseLocalBranch } },
     [NavigableMenuElement]@{trigger = 'D'; label = 'Delete local branches that have been deleted from remote'; action = { GitDeleteLocalBranchesDeletedFromRemote } },
     [NavigableMenuElement]@{trigger = 'N'; label = 'Create new local branch'; action = { GitCreateNewBranch } },
     [NavigableMenuElement]@{trigger = 'S'; label = 'System dependent branch handling'; action = { Get-SystemDependentGitCheckouts } }
   )
+  Show-NavigableMenu -menuHeader:'Branch handling' -options:$options
 }
 Set-Alias b GitHandleBranches
 Add-ToFunctionList -category 'Git' -name 'b' -value 'Git handle branches'
@@ -375,9 +368,10 @@ function GitChooseLocalBranch {
   $numberOfBranches = $localBranchNamesAsList.Length
   If ($numberOfBranches -eq 0) { Return OUT $(PE -txt:'No local branches found' -fg:$global:colors.Red) }
 
-  $options = $localBranchNamesAsList | ForEach-Object {
+  $options = @()
+  $localBranchNamesAsList | ForEach-Object {
     $trigger = If ($localBranchNamesAsList.IndexOf($_) -lt 10) { $localBranchNamesAsList.IndexOf($_).ToString() } Else { $null }
-    [NavigableMenuElement]@{ trigger = $trigger; label = $_; action = [scriptblock]::Create("GitCheckout '$_'") }
+    $options += [NavigableMenuElement]@{ trigger = $trigger; label = $_; action = [scriptblock]::Create("GitCheckout '$_'") }
   }
   $options += [NavigableMenuElement]@{ trigger = 'M'; label = 'Enter branch name manually'; action = { GitCheckout } }
   
@@ -394,9 +388,10 @@ function GitRebaseLocalBranch {
   $numberOfBranches = $localBranchNamesAsList.Length
   If ($numberOfBranches -eq 0) { Return OUT $(PE -txt:'No local branches found' -fg:$global:colors.Red) }
 
-  $options = $localBranchNamesAsList | ForEach-Object {
+  $options = @()
+  $localBranchNamesAsList | ForEach-Object {
     $trigger = If ($localBranchNamesAsList.IndexOf($_) -lt 10) { $localBranchNamesAsList.IndexOf($_).ToString() } Else { $null }
-    [NavigableMenuElement]@{ trigger = $trigger; label = $_; action = [scriptblock]::Create("GitRebase '$_'") }
+    $options += [NavigableMenuElement]@{ trigger = $trigger; label = $_; action = [scriptblock]::Create("GitRebase '$_'") }
   }
   $options += [NavigableMenuElement]@{ trigger = 'M'; label = 'Enter branch name manually'; action = { GitRebase } }
   
