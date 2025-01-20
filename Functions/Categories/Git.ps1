@@ -485,3 +485,44 @@ function Edit-GitConfig {
   git config --global --edit 
 }
 Add-ToFunctionList -category 'Git' -name 'Edit-GitConfig' -value 'Edit global git config'
+
+
+function Get-PnpmBiomeLintList {
+  $output = pnpm biome lint 2>&1 | Out-String -Stream
+  $filteredOutput = $output -split "`n" | Where-Object { $_.Length -ge 3 -and $_[2] -ne ' ' }
+  
+  $results = @()
+  $maxShortPathLength = 0
+  
+  for ($i = 0; $i -lt $filteredOutput.Length; $i++) {
+    $fullPath = ''
+    $shortPath = ''
+    $message = ''
+    
+    if ($filteredOutput[$i] -match '^(?<path>\S+:\d+:\d+)') {
+      $fullPath = $matches['path']
+      $shortPath = $fullPath -replace '^.+\\', ''
+      $maxShortPathLength = [Math]::Max($maxShortPathLength, $shortPath.Length)
+      
+      if ($i + 1 -lt $filteredOutput.Length) { $message = $filteredOutput[++$i] }
+      else { $message = 'No message provided' }
+    }
+    
+    if ($fullPath -ne '' -and $shortPath -ne '' -and $message -ne '') {
+      $results += [pscustomobject]@{ fullPath = $fullPath; shortPath = $shortPath; message = $message }
+    }
+  }
+
+  $options = @()
+  $results | ForEach-Object {
+    $goToPath = $_.fullPath
+    $options += [NavigableMenuElement]@{
+      label  = $_.shortPath.PadRight($maxShortPathLength) + $_.message
+      action = [scriptblock]::Create("code --goto '$goToPath'")
+    }
+  }
+  
+  Show-NavigableMenu -menuHeader:'Pnpm Biome Lint' -options:$options
+}
+Set-Alias pbl Get-PnpmBiomeLintList
+Add-ToFunctionList -category 'Git' -name 'pbl' -value 'Get navigable pnpm biome lint list'
