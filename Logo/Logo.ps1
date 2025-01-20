@@ -119,11 +119,11 @@ function Get-ColorChartStringAndExplanation {
     '23.01' { $colorChartString = 'norway'; $explanation = 'Birthday'; Break }
     '24.01' { $colorChartString = 'norway'; $explanation = 'Birthday'; Break }
     '.*.01' { $colorChartString = 'colorfull'; $explanation = 'What a colorful new year!'; Break }
-    '09.04' { $colorChartString = 'norway'; $explanation = 'Birthday'; Break }
     '31.03' { $colorChartString = 'trans'; $explanation = 'International Transgender Day Of Visibility'; Break }
+    '09.04' { $colorChartString = 'norway'; $explanation = 'Birthday'; Break }
     '04.05' { $colorChartString = 'starWars'; $explanation = 'May the 4th be with you'; Break }
-    '.*.06' { $colorChartString = 'rainbow'; $explanation = 'Pride Month'; Break }
     '.*.05' { $colorChartString = 'norway'; $explanation = 'Norwegian National Day (May 17th)'; Break }
+    '.*.06' { $colorChartString = 'rainbow'; $explanation = 'Pride Month'; Break }
     '.*.07' { $colorChartString = 'nonbinary'; $explanation = 'Nonbinary Awareness Week (approx. 14th)'; Break }
     '^(?:0[0-9])\.09$' { $colorChartString = 'blueRibbon'; $explanation = 'Prostate Cancer Awareness Month'; Break }
     '.*.09' { $colorChartString = 'bisexual'; $explanation = 'Bisexual Awareness Week (approx. 16th-23rd)'; Break }
