@@ -118,7 +118,7 @@ function Get-ColorChartStringAndExplanation {
   switch -Regex (Get-Date -Format 'dd.MM') {
     '23.01' { $colorChartString = 'norway'; $explanation = 'Birthday'; Break }
     '24.01' { $colorChartString = 'norway'; $explanation = 'Birthday'; Break }
-    '.*.01' { $colorChartString = 'colorfull'; $explanation = ''; Break }
+    '.*.01' { $colorChartString = 'colorfull'; $explanation = 'What a colorful new year!'; Break }
     '09.04' { $colorChartString = 'norway'; $explanation = 'Birthday'; Break }
     '31.03' { $colorChartString = 'trans'; $explanation = 'International Transgender Day Of Visibility'; Break }
     '04.05' { $colorChartString = 'starWars'; $explanation = 'May the 4th be with you'; Break }
