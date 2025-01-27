@@ -13,23 +13,23 @@ function Test-FlagExists {
 
 function Add-Flag {
   param ([Parameter(Mandatory)][string]$flagName)
-  OUT $(PE -txt:"Adding flag: $flagName" -fg:$Global:colors.Cyan)
+  Write-Info ('Adding flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName)
   $flagFilePath = Join-Path -Path $FLAG_PATH -ChildPath "$flagName.flag"
-  If (Test-FlagExists -flagName $flagName) { Return OUT $(PE -txt:"Flag already exists: $flagName" -fg:$Global:colors.Green) }
+  If (Test-FlagExists -flagName $flagName) { Return Write-Success ('Flag already exists: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName) }
 
   If (-Not (Test-FlagExists -flagName $flagName)) { New-Item -ItemType File -Path $flagFilePath -Force | Out-Null }
-  If (Test-FlagExists -flagName $flagName) { OUT $(PE -txt:"Successfully added flag: $flagName" -fg:$Global:colors.Green) }
-  Else { OUT $(PE -txt:"Failed to add flag: $flagName" -fg:$Global:colors.Red) }
+  If (Test-FlagExists -flagName $flagName) { Write-Success ('Successfully added flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName) }
+  Else { Write-Fail ('Failed to add flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName) }
 }
 
 function Remove-Flag {
   param ([Parameter(Mandatory)][string]$flagName)
-  OUT $(PE -txt:"Removing flag: $flagName" -fg:$Global:colors.Cyan)
+  Write-Info ('Removing flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName)
   $flagFilePath = Join-Path -Path $FLAG_PATH -ChildPath "$flagName.flag"
   If (Test-FlagExists -flagName $flagName) { Remove-Item -Path $flagFilePath -Force }
 
-  If (Test-FlagExists -flagName $flagName) { OUT $(PE -txt:"Failed to remove flag: $flagName" -fg:$Global:colors.Red) }
-  Else { OUT $(PE -txt:"Successfully removed flag: $flagName" -fg:$Global:colors.Green) }
+  If (Test-FlagExists -flagName $flagName) { Write-Fail ('Failed to remove flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName) }
+  Else { Write-Success ('Successfully removed flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName) }
 }
 
 function Set-FlagPath {

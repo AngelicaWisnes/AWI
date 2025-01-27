@@ -15,8 +15,8 @@ function Test-ResourceExists {
 
 function Confirm-ResourceCreated {
   param ([Parameter(Mandatory)][string]$resourceName)
-  If (Test-ResourceExists -resourceName $resourceName) { OUT $(PE -txt:"Successfully created resource `'$resourceName`'" -fg:$Global:colors.Green) }
-  Else { OUT $(PE -txt:"Failed to create resource `'$resourceName`'" -fg:$Global:colors.Red) }
+  If (Test-ResourceExists -resourceName $resourceName) { Write-Success ('Successfully created resource: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName ) }
+  Else { Write-Fail ('Failed to create resource: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName ) }
 }
 
 
@@ -24,32 +24,32 @@ function Remove-Resource {
   param ([Parameter(Mandatory)][string]$resourceName)
   If (-not (Test-ResourceExists -resourceName $resourceName)) { Return $true }
 
-  OUT $(PE -txt:"Resource `'$resourceName`' already exist`n" -fg:$Global:colors.Cyan)
+  Write-Info ('Resource already exists: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
 
-  If (-not (Confirm-Action -Prompt "Removing resource `'$resourceName`' to create new instance `n`tDo you want to precede?")) {
-    OUT $(PE -txt:"Cancelling... `'$resourceName`' not overwritten" -fg:$Global:colors.Cyan)
+  If (-not (Confirm-Action -Prompt "Removing resource `'$resourceName`' to create new instance")) {
+    Write-Info ('Cancelling... {0}{1}{2} not removed' -f (cfg $Global:RGBs.MintGreen), $resourceName, (cfg $Global:RGBs.Cyan) )
     Return $false
   }
 
-  OUT $(PE -txt:'Removing...' -fg:$Global:colors.Cyan)
+  Write-Info ('Removing resource: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
   $resourceFilePath = Join-Path -Path $RESOURCES_PATH -ChildPath $resourceName
   Remove-Item -Path $resourceFilePath -Recurse -Force
 
   If (Test-ResourceExists -resourceName $resourceName) {
-    OUT $(PE -txt:"Failed to remove resource `'$resourceName`'" -fg:$Global:colors.Red)
+    Write-Fail ('Failed to remove resource: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
     Return $false
   }
 
-  OUT $(PE -txt:"Successfully removed resource `'$resourceName`'" -fg:$Global:colors.Green)
+  Write-Success ('Successfully removed resource: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
   Return $true
 }
 
 
 function Save-Resource {
   param ([Parameter(Mandatory)][string]$resourceName, [Parameter(Mandatory)]$content)
-  OUT $(PE -txt:"`nAdding resource `'$resourceName`'" -fg:$Global:colors.Cyan)
+  Write-Info ('Adding resource {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
   $resourceFilePath = Join-Path -Path $RESOURCES_PATH -ChildPath "$resourceName"
-  If (-not (Remove-Resource -resourceName $resourceName)) { Return OUT $(PE -txt:"Cancelling... `'$resourceName`' not overwritten" -fg:$Global:colors.Cyan) }
+  If (-not (Remove-Resource -resourceName $resourceName)) { Return Write-Info ('Cancelling... {0}{1}{2} not overwritten' -f (cfg $Global:RGBs.MintGreen), $resourceName, (cfg $Global:RGBs.Cyan) ) }
 
   $content | Out-File -FilePath $resourceFilePath -Force
   Confirm-ResourceCreated -resourceName $resourceName
@@ -60,12 +60,12 @@ function Copy-Resource {
   param ( [Parameter(Mandatory)][string]$resourceName )
   $resourceToCopyPath = "$env:APPDATA\Code\User\$resourceName"
 
-  OUT $(PE -txt:"`nCopying VS Code resource `'$resourceName`'" -fg:$Global:colors.Cyan)
+  Write-Info ('Copying VS Code resource {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
 
-  If (-not (Test-Path -Path $resourceToCopyPath)) { OUT $(PE -txt:"Failed to copy `'$resourceName`', because the resource was not found" -fg:$Global:colors.Red) }
-  If (-not (Remove-Resource -resourceName $resourceName)) { Return OUT $(PE -txt:"Cancelling... `'$resourceName`' not overwritten" -fg:$Global:colors.Cyan) }
+  If (-not (Test-Path -Path $resourceToCopyPath)) { Write-Fail ('Failed to copy {0}{1}{2}, because the resource was not found' -f (cfg $Global:RGBs.MintGreen), $resourceName, (cfg $Global:RGBs.Red) ) }
+  If (-not (Remove-Resource -resourceName $resourceName)) { Return Write-Info ('Cancelling... {0}{1}{2} not overwritten' -f (cfg $Global:RGBs.MintGreen), $resourceName, (cfg $Global:RGBs.Cyan) ) }
 
-  OUT $(PE -txt:'Copying...' -fg:$Global:colors.Cyan)
+  Write-Info ('Copying resource {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
   Copy-Item -Path $resourceToCopyPath -Destination $RESOURCES_PATH -Recurse -Force
   Confirm-ResourceCreated -resourceName $resourceName
 }

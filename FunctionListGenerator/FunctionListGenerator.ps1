@@ -5,13 +5,14 @@
 ########################
 # Define function-list #
 ########################
-class FunctionListElement { [string]$category ; [string]$name ; [string]$value }
+function ColorizeJade { param([string]$str); Return ('{0}{1}{2}' -f (cfg $Global:RGBs.Jade), $str, (cr)) }
+class FunctionListElement { [string]$category ; [string]$name ; [string]$value ; [string]$fillerChar }
 
-$ListElement_Top = [FunctionListElement]@{ category = '¯'; name = '¯'; value = '¯' }
-$ListElement_BREAK = [FunctionListElement]@{ category = '-'; name = '-'; value = '-' }
-$ListElement_Labels = [FunctionListElement]@{ category = 'CATEGORY'; name = 'NAME'; value = 'VALUE' }
-$ListElement_Empty = [FunctionListElement]@{ category = ''; name = ''; value = '' }
-$ListElement_End = [FunctionListElement]@{ category = '_'; name = '_'; value = '_' }
+$ListElement_Top = [FunctionListElement]@{ category = ''; name = ''; value = ''; fillerChar = '¯' }
+$ListElement_BREAK = [FunctionListElement]@{ category = ''; name = ''; value = ''; fillerChar = '-' }
+$ListElement_Labels = [FunctionListElement]@{ category = 'CATEGORY'; name = 'NAME'; value = 'VALUE'; fillerChar = ' ' }
+$ListElement_Empty = [FunctionListElement]@{ category = ''; name = ''; value = ''; fillerChar = ' ' }
+$ListElement_End = [FunctionListElement]@{ category = ''; name = ''; value = ''; fillerChar = '_' }
 
 $global:FunctionLists = @{
   Git        = [System.Collections.Generic.List[FunctionListElement]]::new()
@@ -53,23 +54,19 @@ function Add-LineToAllLists {
 }
 
 function FormatString([string]$str, [int]$colWidth, [string]$fillerChar) {
-  $padding = If ($global:isPadded) { $fillerChar }
-  Return $padding + $str.PadRight($colWidth, $fillerChar) + $padding
+  $padding = If ($global:isPadded) { (ColorizeJade $fillerChar) }
+  $filler = $fillerChar * ($colWidth - $str.Length)
+  If ($str.Length -eq 0 ) { $filler = (ColorizeJade $filler) } 
+  If (@('CATEGORY', 'NAME', 'VALUE').Contains($str)) { $str = (ColorizeJade $str) }
+  Return $padding + $str + $filler + $padding
 }
 
-
 function FormatElement([FunctionListElement]$element) {
-  switch ($element.value) {
-    '_' { $fillerChar = '_' }
-    '-' { $fillerChar = '-' }
-    '¯' { $fillerChar = '¯' }
-    default { $fillerChar = ' ' }
-  }
-
-  Return '|{0}|{1}|{2}|' -f `
-  (FormatString -str:$element.category -colWidth:$global:categoryWidth -fillerChar:$fillerChar),
-  (FormatString -str:$element.name -colWidth:$global:nameWidth -fillerChar:$fillerChar),
-  (FormatString -str:$element.value -colWidth:$global:valueWidth -fillerChar:$fillerChar)
+  Return '{0}{1}{0}{2}{0}{3}{0}' -f `
+  (ColorizeJade '|'),
+  (FormatString -str:$element.category -colWidth:$global:categoryWidth -fillerChar:$element.fillerChar),
+  (FormatString -str:$element.name -colWidth:$global:nameWidth -fillerChar:$element.fillerChar),
+  (FormatString -str:$element.value -colWidth:$global:valueWidth -fillerChar:$element.fillerChar)
 }
 
 
@@ -107,7 +104,7 @@ function Add-ToFunctionList {
     [Parameter(Mandatory)][String]$name,
     [Parameter(Mandatory)][String]$value
   )
-  $global:FunctionLists[$category].Add(( [FunctionListElement]@{ category = $category; name = $name; value = $value } ))
+  $global:FunctionLists[$category].Add(( [FunctionListElement]@{ category = $category; name = $name; value = $value; fillerChar = ' ' } ))
 }
 
 function Get-ListOfFunctionsAndAliases {
@@ -136,11 +133,11 @@ function Get-ListOfFunctionsAndAliases {
     $SingleList | ForEach-Object { [void]$sb.AppendLine("$indent{0}" -f (FormatElement -element:$_)) }
   }
 
-  OUT $(PE -txt:$sb.ToString() -fg:$global:colors.DeepPink)
+  Write-Host ('{0}{1}' -f (cfg $Global:RGBs.DeepPink), $sb.ToString())
 }
 Set-Alias l Get-ListOfFunctionsAndAliases
 Add-ToFunctionList -category 'Other' -name 'l' -value 'Get list of functions and aliases'
 
 function Get-FunctionListInfo {
-  OUT $(PE -txt:"Enter 'l' to list all AWI-defined functions and aliases " -fg:$global:colors.DeepPink)
+  Write-Host ("{0}Enter 'l' to list all AWI-defined functions and aliases" -f (cfg $Global:RGBs.DeepPink))
 }

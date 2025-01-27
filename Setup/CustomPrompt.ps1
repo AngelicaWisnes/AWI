@@ -1,17 +1,17 @@
 # Hardcode the color-sequences to enhance speed for the prompt
-$colorYellow = "$global:COLOR_ESCAPE[38;2;{0};{1};{2}m" -f $colors.Yellow.rgb.r, $colors.Yellow.rgb.g, $colors.Yellow.rgb.b
-$colorDodgerBlue = "$global:COLOR_ESCAPE[38;2;{0};{1};{2}m" -f $colors.DodgerBlue.rgb.r, $colors.DodgerBlue.rgb.g, $colors.DodgerBlue.rgb.b
-$colorCyan = "$global:COLOR_ESCAPE[38;2;{0};{1};{2}m" -f $colors.Cyan.rgb.r, $colors.Cyan.rgb.g, $colors.Cyan.rgb.b
-$colorDeepPink = "$global:COLOR_ESCAPE[38;2;{0};{1};{2}m" -f $colors.DeepPink.rgb.r, $colors.DeepPink.rgb.g, $colors.DeepPink.rgb.b
-$colorLightSlateBlue = "$global:COLOR_ESCAPE[38;2;{0};{1};{2}m" -f $colors.LightSlateBlue.rgb.r, $colors.LightSlateBlue.rgb.g, $colors.LightSlateBlue.rgb.b
-$colorMintGreen = "$global:COLOR_ESCAPE[38;2;{0};{1};{2}m" -f $colors.MintGreen.rgb.r, $colors.MintGreen.rgb.g, $colors.MintGreen.rgb.b
-$colorMonaLisa = "$global:COLOR_ESCAPE[38;2;{0};{1};{2}m" -f $colors.MonaLisa.rgb.r, $colors.MonaLisa.rgb.g, $colors.MonaLisa.rgb.b
+$colorYellow = cfg $Global:RGBs.Yellow
+$colorDodgerBlue = cfg $Global:RGBs.DodgerBlue
+$colorCyan = cfg $Global:RGBs.Cyan
+$colorDeepPink = cfg $Global:RGBs.DeepPink
+$colorLightSlateBlue = cfg $Global:RGBs.LightSlateBlue
+$colorMintGreen = cfg $Global:RGBs.MintGreen
+$colorMonaLisa = cfg $Global:RGBs.MonaLisa
 
-$GitPromptPrefix = '{0} [ {1}' -f $colorYellow, $global:RESET_SEQUENCE
-$GitPromptInfix = '{0} | {1}' -f $colorYellow, $global:RESET_SEQUENCE
-$GitPromptPostfix = '{0} ] {1}' -f $colorYellow, $global:RESET_SEQUENCE
-$GitUpstreamPrefix = '{0}({1}' -f $colorDodgerBlue, $global:RESET_SEQUENCE
-$GitUpstreamPostfix = '{0}){1}' -f $colorDodgerBlue, $global:RESET_SEQUENCE
+$GitPromptPrefix = '{0} [ ' -f $colorYellow
+$GitPromptInfix = '{0} | ' -f $colorYellow
+$GitPromptPostfix = '{0} ] ' -f $colorYellow
+$GitUpstreamPrefix = '{0}(' -f $colorDodgerBlue
+$GitUpstreamPostfix = '{0})' -f $colorDodgerBlue
 
 $upArrow = [char]0x2191  # Up arrow
 $downArrow = [char]0x2193  # Down arrow
@@ -98,17 +98,17 @@ function Get-GitPrompt {
   #Get-GitPromptPrefix
 
   # Git branch information
-  [void]$sb.Append($GitUpstreamPrefix + $colorCyan + $upstreamBranch + $global:RESET_SEQUENCE)
-  [void]$sb.Append($GitUpstreamPostfix + $colorCyan + $localBranch + $global:RESET_SEQUENCE)
+  [void]$sb.Append($GitUpstreamPrefix + $colorCyan + $upstreamBranch)
+  [void]$sb.Append($GitUpstreamPostfix + $colorCyan + $localBranch)
 
   # GitPrompt Pull information
   If ( $commitsToPull -gt 0 ) {
-    [void]$sb.Append($GitPromptInfix + $colorDeepPink + $downArrow + ' ' + $commitsToPull + $global:RESET_SEQUENCE)
+    [void]$sb.Append($GitPromptInfix + $colorDeepPink + $downArrow + ' ' + $commitsToPull)
   }
 
   # GitPrompt Push information
   If ( $commitsToPush -gt 0 ) {
-    [void]$sb.Append($GitPromptInfix + $colorLightSlateBlue + $upArrow + ' ' + $commitsToPush + $global:RESET_SEQUENCE)
+    [void]$sb.Append($GitPromptInfix + $colorLightSlateBlue + $upArrow + ' ' + $commitsToPush)
   }
 
   # GitPrompt Staged information
@@ -116,7 +116,7 @@ function Get-GitPrompt {
   $stagedChanged = $stagedStatus['~']
   $stagedDeleted = $stagedStatus['-']
   If ( ($stagedAdded -gt 0) -or ($stagedChanged -gt 0) -or ($stagedDeleted -gt 0) ) {
-    [void]$sb.Append($GitPromptInfix + $colorMintGreen + $checkMark + '  +' + $stagedAdded + ' ~' + $stagedChanged + ' -' + $stagedDeleted + $global:RESET_SEQUENCE)
+    [void]$sb.Append($GitPromptInfix + $colorMintGreen + $checkMark + '  +' + $stagedAdded + ' ~' + $stagedChanged + ' -' + $stagedDeleted)
   }
 
   # GitPrompt Unstaged information
@@ -124,7 +124,7 @@ function Get-GitPrompt {
   $unstagedChanged = $unstagedStatus['~']
   $unstagedDeleted = $unstagedStatus['-']
   If ( ($unstagedAdded -gt 0) -or ($unstagedChanged -gt 0) -or ($unstagedDeleted -gt 0) ) {
-    [void]$sb.Append($GitPromptInfix + $colorMonaLisa + $warning + '  +' + $unstagedAdded + ' ~' + $unstagedChanged + ' -' + $unstagedDeleted + $global:RESET_SEQUENCE)
+    [void]$sb.Append($GitPromptInfix + $colorMonaLisa + $warning + '  +' + $unstagedAdded + ' ~' + $unstagedChanged + ' -' + $unstagedDeleted)
   }
 
   # GitPrompt Postfix
@@ -146,7 +146,7 @@ function prompt {
   [void]$sb.Append($(Get-GitPrompt))
 
   # Postfix
-  [void]$sb.Append('> ')
+  [void]$sb.Append('{0}> ' -f (cr))
 
   $sb.ToString()
 }

@@ -15,18 +15,18 @@ function Install-AppFromWinget {
   param([Parameter(Mandatory)][String]$appID)
   $psScriptBlock = [scriptblock]::Create("winget install --id '$appID'")
 
-  OUT $(PE -txt:"Starting - Winget install --id $appID" -fg:$Global:colors.Cyan)
+  Write-Info ('Starting - Winget install --id {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
   If ($(Confirm-Action -Prompt "Installing $appID - Do you want to proceed?")) {
     $ps5Process = Start-Process powershell -ArgumentList '-NoProfile', '-Command', $psScriptBlock -PassThru
     $ps5Process.WaitForExit()
   }
 
   If (Test-AppIsInstalled -appID $appID) {
-    OUT $(PE -txt:"Finished - Installing $appID" -fg:$Global:colors.Green)
+    Write-Success ('Finished - Installing {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
     Return $true
   }
   Else {
-    OUT $(PE -txt:"Failed - Installing $appID" -fg:$Global:colors.Red)
+    Write-Fail ('Failed - Installing {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
     Return $false
   }
 }
@@ -37,12 +37,12 @@ function Test-AppIsInstalled {
   $private:app = winget list --id $appID 2>&1
 
   If ( $private:app -match 'No installed package found') {
-    OUT $(PE -txt:'Is not installed: ' -fg:$Global:colors.Green), $(PE -txt:"$appID " -fg:$Global:colors.MintGreen)
+    Write-Info ('Is not installed: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
     Return $false
   }
-
+  
   $flagName = Get-WingetFlagNameByAppID -appID $appID
-  OUT $(PE -txt:'Is installed: ' -fg:$Global:colors.Green), $(PE -txt:"$appID " -fg:$Global:colors.MintGreen)
+  Write-Info ('Is installed: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
   Add-Flag -flagName $flagName
   Return $true
 }
@@ -52,14 +52,14 @@ function Test-AppShouldBeInstalled {
   param([Parameter(Mandatory)][String]$appID)
   $flagName = Get-WingetFlagNameByAppID -appID $appID
 
-  OUT $(PE -txt:'Checking - Should ' -fg:$Global:colors.Cyan), $(PE -txt:"$appID " -fg:$Global:colors.MintGreen), $(PE -txt:'be installed' -fg:$Global:colors.Cyan)
+  Write-Info ('Checking - Should {0}{1}{2} be installed' -f (cfg $Global:RGBs.MintGreen), $appID, (cfg $Global:RGBs.Cyan))
 
   If ($(Test-AppIsInstalled -appID $appID) -or $(Test-FlagExists -flagName $flagName)) {
-    OUT $(PE -txt:'Finished - Checking: ' -fg:$Global:colors.Green), $(PE -txt:"$appID " -fg:$Global:colors.MintGreen), $(PE -txt:"should NOT be installed`n" -fg:$Global:colors.Green)
+    Write-Info ('Finished - Checking: {0}{1}{2} should NOT be installed' -f (cfg $Global:RGBs.MintGreen), $appID, (cfg $Global:RGBs.Cyan))
     Return $false
   }
-
-  OUT $(PE -txt:'Finished - Checking: ' -fg:$Global:colors.Green), $(PE -txt:"$appID " -fg:$Global:colors.MintGreen), $(PE -txt:"should be installed`n" -fg:$Global:colors.Green)
+  
+  Write-Info ('Finished - Checking: {0}{1}{2} should be installed' -f (cfg $Global:RGBs.MintGreen), $appID, (cfg $Global:RGBs.Green))
   Return $true
 }
 
@@ -80,26 +80,26 @@ function Get-WingetFlagNameByAppID {
 
 
 function Install-Apps {
-  OUT $(PE -txt:'Initiating - Winget app installation' -fg:$Global:colors.Cyan)
-
+  Write-Info 'Initiating - Winget app installation'
+  
   foreach ($appID in $wingetAppIDs) {
-    OUT $(PE -txt:'Starting - Procedure: ' -fg:$Global:colors.Cyan), $(PE -txt:"$appID" -fg:$Global:colors.MintGreen)
+    Write-Info ('Starting - Procedure: {0}{1}' -f (cfg $Global:RGBs.MintGreen), 'appID')
 
     $flagName = Get-WingetFlagNameByAppID -appID $appID
     If (-not $(Test-AppShouldBeInstalled -appID $appID)) { continue }
     $installed = Install-AppFromWinget -appID $appID
 
     If (-not $installed) {
-      OUT $(PE -txt:"Did not install $appID. " -fg:$Global:colors.Red), $(PE -txt:"Running this function again will by default attempt to install $appID again." -fg:$Global:colors.Cyan)
+      Write-Fail ('Did not install {0}{1} {2} - Running this function again will by default attempt to install {0}{1} {2}again. ' -f (cfg $Global:RGBs.MintGreen), $appID, (cfg $Global:RGBs.Cyan))
       If (-not $(Confirm-Action -Prompt 'Do you want to add a flag to prevent that?')) { continue }
     }
-    Else { OUT $(PE -txt:"Successfully installed $appID." -fg:$Global:colors.Green) }
+    Else { Write-Success ('Successfully installed {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID) }
 
     Add-Flag -flagName $flagName
-    OUT $(PE -txt:'Finished - Procedure: ' -fg:$Global:colors.Green), $(PE -txt:"$appID" -fg:$Global:colors.MintGreen)
+    Write-Success ('Finished - Procedure: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
   }
 
-  OUT $(PE -txt:'Finished - Winget app installer' -fg:$Global:colors.Green)
+  Write-Success 'Finished - Winget app installation'
 }
 
 
@@ -108,13 +108,13 @@ function Invoke-ExternalAppInstaller {
   If (Test-FlagExists -flagName $flagName) { Return }
   If (Confirm-Action -Prompt 'Do you want to run the external app installer?') { Install-Apps }
 
-  OUT $(PE -txt:'Checking - Have all apps been installed' -fg:$Global:colors.Cyan)
+  Write-Info 'Checking - Have all apps been installed'
   If (Test-AllAppsAreInstalled) {
-    OUT $(PE -txt:'All apps have been installed. Adding flag to prevent future running of external app installer' -fg:$Global:colors.Green)
+    Write-Success 'All apps have been installed. Adding flag to prevent future running of external app installer'
     Add-Flag -flagName $flagName
   }
   Else {
-    OUT $(PE -txt:'All apps have not been installed' -fg:$Global:colors.Red)
+    Write-Fail 'All apps have not been installed'
     If (Confirm-Action -Prompt 'Do you want to prevent running the external app installer again?') { Add-Flag -flagName $flagName }
   }
 }

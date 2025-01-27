@@ -7,15 +7,15 @@ function pro {
     [array]$projects = $SYSTEM_PROJECTS,
     [int]$decision = -1
   )
-  If ( $projects.Count -eq 0 ) { Return Write-Host -ForegroundColor Red "`n`tThe project-list is empty`n" }
+  If ( $projects.Count -eq 0 ) { Return Write-Fail 'The project-list is empty' }
 
   # If decision is '-1', try to get a decision. If it still is '-1' after deciding, then Return a cancel-statement
-  Write-Host -ForegroundColor White "`nQuick-launching project..."
+  Write-Info 'Quick-launching project...'
   If ( $decision -eq -1 ) { $decision = _pro_printChoicesAndGetDecision($projects) }
-  If ( $decision -eq -1 ) { Return Write-Host -ForegroundColor Cyan "`nCancelled quick-launch`n" }
+  If ( $decision -eq -1 ) { Return Write-Info 'Cancelled quick-launch' }
 
   $chosen = $projects[$decision]
-  Write-Host -ForegroundColor Cyan "`nLaunching project `'$($chosen.name)`'...`n"
+  Write-Info "Launching project '$($chosen.name)'..."
 
   If ($($chosen.webs).Length -gt 0) { startNewBrowser $chosen.webs }
   If ($chosen.stdScript) { _pro_newPsStdActions -repo $chosen.repo -branch $chosen.branch -useDotNetIde $chosen.useDotNetIde }
@@ -32,12 +32,12 @@ function proClean {
   )
 
   # If decision is '-1', try to get a decision. If it still is '-1' after deciding, then Return a cancel-statement
-  Write-Host -ForegroundColor White "`nCleanup quick-launch project..."
+  Write-Host ("`n{0}Cleanup quick-launch project..." -f (cfg $Global:RGBs.White))
   If ( $decision -eq -1 ) { $decision = _pro_printChoicesAndGetDecision($projects) }
-  If ( $decision -eq -1 ) { Return Write-Host -ForegroundColor Cyan "`nCancelled cleanup`n" }
+  If ( $decision -eq -1 ) { Return Write-Info 'Cancelled cleanup' }
 
   $chosen = $projects[$decision]
-  Write-Host -ForegroundColor Cyan "`nLaunching cleanup on `'$($chosen.name)`'...`n"
+  Write-Info "Launching cleanup on '$($chosen.name)'..."
 
   # Open 'SystemProjects.ps1' to facilitate changes
   code $global:AWI
@@ -45,7 +45,7 @@ function proClean {
 
   startNewBrowser (_pro_getWebs -projects @($chosen))
 
-  Write-Host -ForegroundColor Red "`n`tNOTE: If the bitbucket pages show '404', `n`tthen that should mean the branch is deleted correctly."
+  Write-Info "`n`tNOTE: If the bitbucket pages show '404', `n`tthen that should mean the branch is deleted correctly."
 }
 Add-ToFunctionList -category 'Project' -name 'proClean' -value 'Cleanup quick-launch projects'
 
@@ -81,9 +81,9 @@ function _pro_printChoicesAndGetDecision {
 function _pro_printChoicesAndGetDecision_autoInput {
   param( [Parameter(Mandatory)][array]$projects )
   Write-Host 'These are the available quick-launch-projects:'
-  Write-Host -ForegroundColor Red ('   [0] ' + $projects[0].name)
-  For ($i = 1; $i -lt $projects.length; $i++) { Write-Host -ForegroundColor White ("   [$i] " + $projects[$i].name) }
-  Write-Host -ForegroundColor Yellow '   [Any] Cancel '
+  Write-Host ('   [0] ' + $($projects[0].name))
+  For ($i = 1; $i -lt $projects.length; $i++) { Write-Host ("   [$i] " + $($projects[$i].name)) }
+  Write-Host '   [Any] Cancel '
 
   # Read input-key, and check If it is a number
   $decision = $Host.UI.RawUI.ReadKey().Character
@@ -101,13 +101,13 @@ function _pro_printChoicesAndGetDecision_autoInput {
 function _pro_printChoicesAndGetDecision_manualInput {
   param( [Parameter(Mandatory)][array]$projects )
   Write-Host 'These are the available quick-launch-projects:'
-  Write-Host -ForegroundColor Red ('   [0] ' + $projects[0].name)
-  For ($i = 1; $i -lt $projects.length; $i++) { Write-Host -ForegroundColor White ("   [$i] " + $projects[$i].name) }
-  Write-Host -ForegroundColor Yellow '   [Any] Cancel '
+  Write-Host ('   [0] ' + $($projects[0].name))
+  For ($i = 1; $i -lt $projects.length; $i++) { Write-Host ("   [$i] " + $($projects[$i].name)) }
+  Write-Host '   [Any] Cancel '
 
   try {
     $userInput = Read-Host 'Enter your choice'
-    If (!$userUnput.Length) { throw 'empty input' }
+    If (!$userInput.Length) { throw 'empty input' }
 
     [int]$decision = $userInput
     If (($decision -lt 0) -or ($decision -ge $projects.Length)) { throw 'out of bounds' }
@@ -123,11 +123,11 @@ function _pro_Merged {
     [Parameter(Mandatory)][String]$oldBranch,
     [Parameter(Mandatory)][String]$newBranch
   )
-  Write-Host -ForegroundColor Red "`n`tNOTE: This branch `n`t`'$oldBranch`' `n`tis merged into `n`t`'$newBranch`'`n"
+  Write-Info "`n`tNOTE: This branch `n`t`'$oldBranch`' `n`tis merged into `n`t`'$newBranch`'`n"
 }
 
 
-function _pro_Ready { Write-Host -ForegroundColor Red "`n`tNOTE: This project is ready for release. `n`tMake sure that all branches are deleted after merge.`n" }
+function _pro_Ready { Write-Info "`n`tNOTE: This project is ready for release. `n`tMake sure that all branches are deleted after merge.`n" }
 
 
 function _pro_newPsStdActions {
@@ -155,7 +155,7 @@ function _pro_stdActions {
   Set-Location $global:DEFAULT_START_PATH\$repo
 
   # Switch to correct branch
-  If ($branch -eq 'BYPASS') { Write-Host -ForegroundColor Cyan "`tNo branch name was provided`n`t" }
+  If ($branch -eq 'BYPASS') { Write-Info "`tNo branch name was provided`n`t" }
   Else { _pro_stdActions_changeBranch $branch }
 
   # Check status, open bitbucket-repo, and open VS code
@@ -169,7 +169,7 @@ function _pro_stdActions {
 function _pro_stdActions_changeBranch {
   param( [Parameter(Mandatory)][String]$branch )
 
-  Write-Host -ForegroundColor Cyan "Checkout branch: $branch"
+  Write-Info "Checkout branch: $branch"
   $currentGitBranch = getCurrentGitBranch
   If ($currentGitBranch -ne $branch) {
     If ((Get-GitStatus).Working.length -eq 0 -and (Get-GitStatus).Index.length -eq 0) {
@@ -177,11 +177,11 @@ function _pro_stdActions_changeBranch {
     }
     Else {
       Set-Clipboard -Value $branch
-      Write-Host -ForegroundColor Red 'Current branch has unhandled changes. Handle changes before switching to working branch.'
-      Write-Host -ForegroundColor Cyan 'Working branch-name is copied to clipboard'
+      Write-Fail 'Current branch has unhandled changes. Handle changes before switching to working branch.'
+      Write-Info 'Working branch-name is copied to clipboard'
     }
   }
   Else {
-    Write-Host -ForegroundColor Green "Already on correct branch`n"
+    Write-Info "Already on correct branch`n"
   }
 }

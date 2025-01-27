@@ -109,7 +109,6 @@ function Get-Logo {
   Get-Explanation -expl:$explanation
   Get-RainbowSlimLine
   Get-TransSlimLine -NoNewlineStart
-  OUT
 }
 Add-ToFunctionList -category 'Other' -name 'Get-Logo' -value 'Get Logo'
 
@@ -147,8 +146,6 @@ function Get-AllLogoColors {
   Get-ArtRGB -colorChartString:'starWars'
   Get-ArtRGB -colorChartString:'colorfull'
   Get-ArtRGB -colorChartString:'randomColor'
-  OUT $(PE -txt:$(Get-LogoAsString) -fg:$global:colors.DeepPink)
-  OUT
 }
 Add-ToFunctionList -category 'Other' -name 'Get-AllLogoColors' -value 'Get all Logo colors'
 
@@ -160,30 +157,33 @@ function Get-ArtRGB {
   )
   $lines = $outputString.Split("`n")
 
-  If ($null -ne $colorChartString) {
+  If ($colorChartString) {
     $fg_colorNumber = -1
-    $fg_colors = $global:colorChart[$colorChartString].fg
-    $fg_linesOfEachColor = If ($null -ne $fg_colors) { [int]($lines.Count / $fg_colors.Count) }
+    $fg_colors = $Global:RGBChart[$colorChartString].fg
+    $fg_linesOfEachColor = If ($fg_colors) { [int]($lines.Count / $fg_colors.Count) }
+    $fg_numberOfColors = $fg_colors.Count - 1
 
     $bg_colorNumber = -1
-    $bg_colors = $global:colorChart[$colorChartString].bg
-    $bg_linesOfEachColor = If ($null -ne $bg_colors) { [int]($lines.Count / $bg_colors.Count) }
+    $bg_colors = $Global:RGBChart[$colorChartString].bg
+    $bg_linesOfEachColor = If ($bg_colors) { [int]($lines.Count / $bg_colors.Count) }
+    $bg_numberOfColors = $bg_colors.Count - 1
   }
 
   for ($i = 0; $i -lt $lines.Count; $i++) {
-    If ($null -ne $fg_colors -and $i % $fg_linesOfEachColor -eq 0 -and $fg_colorNumber -lt ($fg_colors.Count - 1)) { $fg_colorNumber++ }
-    If ($null -ne $bg_colors -and $i % $bg_linesOfEachColor -eq 0 -and $bg_colorNumber -lt ($bg_colors.Count - 1)) { $bg_colorNumber++ }
+    If ($fg_colors) {
+      $fg_color = If ( $i % $fg_linesOfEachColor -eq 0 -and $fg_colorNumber -lt $fg_numberOfColors ) { $fg_colors[++$fg_colorNumber] } Else { $fg_colors[$fg_colorNumber] }
+    }
+    If ($bg_colors) {
+      $bg_color = If ( $i % $bg_linesOfEachColor -eq 0 -and $bg_colorNumber -lt $bg_numberOfColors ) { $bg_colors[++$bg_colorNumber] } Else { $bg_colors[$bg_colorNumber] }
+    } 
 
-    $fg_color = If ($null -ne $fg_colors) { $fg_colors[$fg_colorNumber] }
-    $bg_color = If ($null -ne $bg_colors) { $bg_colors[$bg_colorNumber] }
-
-    OUT $(PE -txt:$lines[$i] -fg:$fg_color -bg:$bg_color) -NoNewline -NoNewlineStart:$($i -eq 0)
+    Write-Host ('{0}{1}' -f (cfbg $fg_color $bg_color), $lines[$i])
   }
 }
 
 
 function Get-Selfie {
-  OUT $(PE -txt:$(Get-SelfieAsString) -fg:$global:colors.DeepPink)
+  Write-Host (Get-SelfieAsString)
 }
 Add-ToFunctionList -category 'Other' -name 'Get-Selfie' -value 'Get selfie'
 
@@ -216,10 +216,7 @@ function Get-Explanation {
   param( [string]$expl )
   If (-not $expl) { Return }
   $windowWidth, $_ = Get-WindowDimensions
-  $leftPadding = $windowWidth - $expl.Length
-  $padding = [string]::new(' ', [Math]::Max(0, $leftPadding))
-
-  OUT $(PE -txt:$($padding + $expl) -fg:$global:colors.DeepPink) -NoNewlineStart
+  Write-Host ('{0}{1}' -f (cfg $Global:RGBs.DeepPink), $expl.PadLeft($windowWidth))
 }
 
 
@@ -238,40 +235,49 @@ function Get-HeartStampedLogo {
 
   # Handle logo-color
   $fg_logo_colorNumber = -1
-  $fg_logo_colors = $global:colorChart[$logoColorChartString].fg
+  $fg_logo_colors = $Global:RGBChart[$logoColorChartString].fg
   $fg_logo_linesOfEachColor = If ($null -ne $fg_logo_colors) { [Math]::Max(1, [Math]::floor($logoLines.Count / $fg_logo_colors.Count)) }
+  $fg_logo_numberOfColors = $fg_logo_colors.Count - 1
 
   $bg_logo_colorNumber = -1
-  $bg_logo_colors = $global:colorChart[$logoColorChartString].bg
+  $bg_logo_colors = $Global:RGBChart[$logoColorChartString].bg
   $bg_logo_linesOfEachColor = If ($null -ne $bg_logo_colors) { [Math]::Max(1, [Math]::floor($logoLines.Count / $bg_logo_colors.Count)) }
+  $bg_logo_numberOfColors = $bg_logo_colors.Count - 1
 
-  #Handle heart-color
+  # Handle heart-color
   $fg_heart_colorNumber = -1
-  $fg_heart_colors = $global:colorChart[$heartColorChartString].fg
+  $fg_heart_colors = $Global:RGBChart[$heartColorChartString].fg
   $fg_heart_linesOfEachColor = If ($null -ne $fg_heart_colors) { [Math]::Max(1, [Math]::floor($heartLines.Count / $fg_heart_colors.Count)) }
+  $fg_heart_numberOfColors = $fg_heart_colors.Count - 1
 
   $bg_heart_colorNumber = -1
-  $bg_heart_colors = $global:colorChart[$heartColorChartString].bg
+  $bg_heart_colors = $Global:RGBChart[$heartColorChartString].bg
   $bg_heart_linesOfEachColor = If ($null -ne $bg_heart_colors) { [Math]::Max(1, [Math]::floor($heartLines.Count / $bg_heart_colors.Count)) }
-  $bg_heart_linesOfEachColor
+  $bg_heart_numberOfColors = $bg_heart_colors.Count - 1
 
 
   for ($i = 0; $i -lt $logoLines.Count; $i++) {
     # Handle logo-color
-    If ($null -ne $fg_logo_colors -and $i % $fg_logo_linesOfEachColor -eq 0 -and $fg_logo_colorNumber -lt ($fg_logo_colors.Count - 1)) { $fg_logo_colorNumber++ }
-    If ($null -ne $bg_logo_colors -and $i % $bg_logo_linesOfEachColor -eq 0 -and $bg_logo_colorNumber -lt ($bg_logo_colors.Count - 1)) { $bg_logo_colorNumber++ }
+    If ( $fg_logo_colors ) {
+      If ( $i % $fg_logo_linesOfEachColor -eq 0 -and $fg_logo_colorNumber -lt $fg_logo_numberOfColors ) { $fg_logo_colorNumber++ }
+      $fg_logo_color = $fg_logo_colors[$fg_logo_colorNumber]
+    } 
 
-    $fg_logo_color = If ($null -ne $fg_logo_colors) { $fg_logo_colors[$fg_logo_colorNumber] }
-    $bg_logo_color = If ($null -ne $bg_logo_colors) { $bg_logo_colors[$bg_logo_colorNumber] }
+    If ( $bg_logo_colors ) {
+      If ( $i % $bg_logo_linesOfEachColor -eq 0 -and $bg_logo_colorNumber -lt $bg_logo_numberOfColors ) { $bg_logo_colorNumber++ }
+      $bg_logo_color = $bg_logo_colors[$bg_logo_colorNumber]
+    } 
+    
+    # Handle heart-color
+    # Do not try to colorize the two first lines (heightOffset)
+    If ( $fg_heart_colors -and $i -gt 2 ) {
+      If ( ($i - 3) % $fg_heart_linesOfEachColor -eq 0 -and $fg_heart_colorNumber -lt $fg_heart_numberOfColors ) { $fg_heart_colorNumber++ }
+      $fg_heart_color = $fg_heart_colors[$fg_heart_colorNumber]
+    } 
 
-    #Handle heart-color
-    If ($i -gt 2) {
-      # Do not try to colorize the two first lines (heightOffset)
-      If ($null -ne $fg_heart_colors -and ($i - 3) % $fg_heart_linesOfEachColor -eq 0 -and $fg_heart_colorNumber -lt ($fg_heart_colors.Count - 1)) { $fg_heart_colorNumber++ }
-      If ($null -ne $bg_heart_colors -and ($i - 3) % $bg_heart_linesOfEachColor -eq 0 -and $bg_heart_colorNumber -lt ($bg_heart_colors.Count - 1)) { $bg_heart_colorNumber++ }
-
-      $fg_heart_color = If ($null -ne $fg_heart_colors) { $fg_heart_colors[$fg_heart_colorNumber] }
-      $bg_heart_color = If ($null -ne $bg_heart_colors) { $bg_heart_colors[$bg_heart_colorNumber] }
+    If ( $bg_heart_colors -and $i -gt 2 ) {
+      If ( ($i - 3) % $bg_heart_linesOfEachColor -eq 0 -and $bg_heart_colorNumber -lt $bg_heart_numberOfColors ) { $bg_heart_colorNumber++ }
+      $bg_heart_color = $bg_heart_colors[$bg_heart_colorNumber]
     }
 
     # Split the string based on consecutive occurrences of "H", " ", and "#"
@@ -281,10 +287,9 @@ function Get-HeartStampedLogo {
       $isHeart = $_.Substring(0, 1) -eq 'H'
       $fg_color = If ($isHeart) { $fg_heart_color } Else { $fg_logo_color }
       $bg_color = If ($isHeart) { $bg_heart_color } Else { $bg_logo_color }
-      OUT $(PE -txt:$_ -fg:$fg_color -bg:$bg_color ) -NoNewlineStart -NoNewline
+      Write-Host ('{0}{1}' -f (cfbg $fg_color $bg_color), $_) -NoNewline
     }
-
-    If ($i -ne 0) { OUT }
+    Write-Host 
   }
 }
 

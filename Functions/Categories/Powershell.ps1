@@ -5,14 +5,14 @@
 function Confirm-Action {
   param([Parameter(Mandatory)][String] $Prompt)
 
-  OUT $(PE -txt:"$Prompt [Y/N] (Default - N): " -fg:$global:colors.White) -NoNewline
+  Write-Host ('{0}{1} [Y/N] (Default - N): ' -f (cfg $Global:RGBs.White), $Prompt) -NoNewline
   $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
   If ($private:userInput.ToUpper() -eq 'Y') {
-    OUT $(PE -txt:"`nProceeding with action..." -fg:$Global:colors.Cyan)
+    Write-Info 'Proceeding with action...'
     Return $true
   }
   Else {
-    OUT $(PE -txt:"`nProceeding without action..." -fg:$Global:colors.Cyan)
+    Write-Info 'Proceeding without action...'
     Return $false
   }
 }
@@ -63,7 +63,7 @@ Add-ToFunctionList -category 'PowerShell' -name 'awi' -value 'Push-Location $AWI
 
 function ReloadAWI {
   $global:startPath = Get-Location
-  OUT $(PE -txt:"`tReloading profile with start-path: `n`t$global:startPath`n" -fg:$global:colors.Cyan)
+  Write-Info "`tReloading profile with start-path: `n`t$Global:startPath"
   . $global:AWI\AWI.ps1
 }
 Set-Alias ra ReloadAWI
@@ -72,7 +72,7 @@ Add-ToFunctionList -category 'PowerShell' -name '. ra' -value 'Reload AWI'
 
 function ReloadPsProfile {
   $global:startPath = Get-Location
-  OUT $(PE -txt:"`tReloading profile with start-path: `n`t$global:startPath`n" -fg:$global:colors.Cyan)
+  Write-Info "`tReloading profile with start-path: `n`t$Global:startPath"
   . $profile
 }
 Set-Alias rap ReloadPsProfile
@@ -98,15 +98,15 @@ function Get-SelectableFileTree {
       $Index.Value++
       $currentRelativePath = If ($RelativePath) { Join-Path -Path $RelativePath -ChildPath $folder.Name } Else { $folder.Name }
       $global:folderPaths += $currentRelativePath
-      If (-not $preSelection) { OUT $(PE -txt:$('  {0,4} {1}- {2}' -f $Index.Value, $Prefix, $folder.Name) -fg:$global:colors.Cyan) -NoNewlineStart }
+      If (-not $preSelection) { Write-Host ('{0}  {1,4} {2}- {3}' -f (cfg $Global:RGBs.Cyan), $Index.Value, $Prefix, $folder.Name) }
       Show-Tree -BasePath $folder.FullName -Index $Index -Prefix "$Prefix- " -RelativePath $currentRelativePath
     }
   }
 
   $index = [ref]0
-  If (-not $preSelection) { OUT $(PE -txt:'Directory-tree:' -fg:$global:colors.Cyan) }
+  If (-not $preSelection) { Write-Info 'Directory-tree:' }
   Show-Tree -BasePath $Path -Index $index
-  If (-not $preSelection) { OUT $(PE -txt:'Enter the number of the folder you want to select: ' -fg:$global:colors.Cyan) -NoNewline }
+  If (-not $preSelection) { Write-Info 'Enter the number of the folder you want to select: ' -NoNewline }
 
   $selection = If ($preSelection) { $preSelection } Else { Read-Host }
   If ($selection -le 0 -or $selection -gt $global:folderPaths.Count) { Write-Host 'Invalid selection. Please try again.' }
@@ -118,8 +118,9 @@ Add-ToFunctionList -category 'PowerShell' -name 'Get-SelectableFileTree' -value 
 function Get-FunctionDefinition {
   param( [Parameter(Mandatory)][String]$commandName )
   $functionName = Get-FunctionNameFromCommandName( $commandName )
+  If (-not $functionName) { Return }
   $codeBlock = Get-FunctionDefinitionAsString $functionName
-  OUT $(PE -txt:$codeBlock -fg:$global:colors.White)
+  Write-Host ('{0}{1}' -f (cfg $Global:RGBs.White), $codeBlock)
 }
 Set-Alias see Get-FunctionDefinition
 Add-ToFunctionList -category 'PowerShell' -name 'see' -value 'See the code-block of function'
@@ -127,14 +128,19 @@ Add-ToFunctionList -category 'PowerShell' -name 'see' -value 'See the code-block
 
 function Get-FunctionNameFromCommandName {
   param( [Parameter(Mandatory)][String]$commandName )
-  $command = Get-Command $commandName
-  $commandType = $command.CommandType
+  try {
+    $command = Get-Command $commandName -ErrorAction SilentlyContinue
+    $commandType = $command.CommandType
+  }
+  catch {
+    $commandType = 'NotFound'
+  }
   If ( $commandType -eq 'Function' ) { Return $commandName }
   If ( $commandType -eq 'Alias' ) {
-    OUT $(PE -txt:"`tCommand-name '$commandName' is an alias for Function-name '$($command.Definition)'`n" -fg:$global:colors.Cyan)
+    Write-Info "`tCommand-name '$commandName' is an alias for Function-name '$($command.Definition)'"
     Return $command.Definition
   }
-  Else { OUT $(PE -txt:"`tMISSING IMPLEMENTATION FOR COMMAND-TYPE '$commandType', in Get-FunctionNameFromCommandName`n" -fg:$global:colors.Red) }
+  Else { Write-Fail "Missing implementation for commandName '$commandName', in Get-FunctionNameFromCommandName" }
 }
 
 function Get-WindowDimensions {
@@ -175,7 +181,7 @@ function Show-NavigableMenu {
   $rewritableLines = "`n" * $optionList.Length
   $lineWidth = (($optionList.label) | Measure-Object -Maximum -Property:Length).Maximum
   $headerLine = '=' * ($lineWidth / 2)
-  OUT $(PE -txt:"$headerLine $menuHeader $headerLine $rewritableLines" -fg:$global:colors.White)
+  Write-Host ("`n{0}{1} {2} {1} {3}" -f (cfg $Global:RGBs.White), $headerLine, $menuHeader, $rewritableLines)
   
   $initialCursorPosition = [System.Console]::CursorTop - $optionList.Length
   $initialCursorSize = $Host.UI.RawUI.CursorSize
@@ -186,9 +192,9 @@ function Show-NavigableMenu {
     for ($i = 0; $i -lt $optionList.Length; $i++) {
       $option = $optionList[$i]
       $label = If ($option.trigger) { "[$($option.trigger)] $($option.label)" } Else { $option.label }
-      If ($i -eq $currentSelection) { OUT $(PE -txt:">> $label" -fg:$global:colors.Cyan) -NoNewlineStart }
-      Elseif ($i -eq ($optionList.Length - 1)) { OUT $(PE -txt:"   $label" -fg:$global:colors.Yellow) -NoNewlineStart }
-      Else { OUT $(PE -txt:"   $label") -NoNewlineStart }
+      If ($i -eq $currentSelection) { Write-Host ('{0}>> {1}' -f (cfg $Global:RGBs.Cyan), $label) }
+      Elseif ($i -eq ($optionList.Length - 1)) { Write-Host ('{0}   {1}' -f (cfg $Global:RGBs.Yellow), $label) }
+      Else { Write-Host "   $label" }
     }
   }
   
@@ -221,51 +227,9 @@ function Show-NavigableMenu {
   printMenuWithCurrentSelectionHighlighted
 
   $selectedOption = $optionList[$currentSelection] 
-  If ($currentSelection -eq $optionList.Length - 1) { OUT $(PE -txt:'Canceling...' -fg:$global:colors.Red) }
-  Else { OUT $(PE -txt:"Executing...`n" -fg:$global:colors.Cyan) }
+  If ($currentSelection -eq $optionList.Length - 1) { Write-Host ("`n{0}Canceling..." -f (cfg $Global:RGBs.Red)) }
+  Else { Write-Host ("`n{0}Executing..." -f (cfg $Global:RGBs.Cyan)) }
   
   $Host.UI.RawUI.CursorSize = $initialCursorSize
   $selectedOption.action.Invoke()
-}
-
-
-$subDirUtils = @{
-  current     = 0
-  root        = Get-FullPath
-  directories = (Get-ChildItem -Directory).name
-  dirCount    = 0
-  initialized = $false
-}
-
-# TODO: Check If this function is completed - If not: Complete it
-function _openAllSubDirs_continue {
-  If ( $subDirUtils.dirCount -eq 0 ) { Return OUT $(PE -txt:'No subdirectories found' -fg:$global:colors.Red) }
-  If ( $subDirUtils.current -eq $subDirUtils.dirCount ) { Return OUT $(PE -txt:'Finished' -fg:$global:colors.Red) }
-
-  $currentDir = $subDirUtils.directories[$subDirUtils.current]
-  Write-Host -ForegroundColor Cyan "Current directory: $($subDirUtils.current+1)/$($subDirUtils.dirCount) `n  $currentDir `n"
-  Set-Location ("$($subDirUtils.root)\$currentDir" | Resolve-Path)
-  $subDirUtils.current += 1
-}
-
-# TODO: Check If this function is completed - If not: Complete it
-function _openAllSubDirs_init {
-  $subDirUtils.current = 0
-  $subDirUtils.root = Get-FullPath
-  $subDirUtils.directories = (Get-ChildItem -Directory).name
-  $subDirUtils.dirCount = $($subDirUtils.directories).Count
-  $subDirUtils.initialized = $True
-
-  Write-Host -ForegroundColor Cyan "
-    Started 'openAllSubDirs -Init'. This will Set-Location for every subdirectory in current directory ($($subDirUtils.dirCount) times).
-    NOTE: This function does not handle recursion, and will reset If run again with 'init'-parameter!
-
-    Run 'openAllSubDirs' to precede to the next subdirectory.`n"
-}
-
-# TODO: Check If this function is completed - If not: Complete it
-function openAllSubDirs {
-  param( [switch]$Init = $False )
-  If ( $Init -or (-not $subDirUtils.initialized) ) { _openAllSubDirs_init }
-  Else { _openAllSubDirs_continue }
 }

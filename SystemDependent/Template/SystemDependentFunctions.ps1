@@ -15,5 +15,10 @@ Add-ToFunctionList -category 'System' -Name 'N/A' -Value 'N/A'
 
 
 function SystemDependentGitCheckouts {
-  OUT $(PE -txt:'No system dependent git checkouts are implemented' -fg:$global:colors.Cyan)
+  Write-Info 'No system dependent git checkouts are implemented'
+}
+
+
+function SystemDependentBranchPrefixes {
+  Write-Info 'No system dependent branch prefixes are implemented'
 }

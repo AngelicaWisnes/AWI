@@ -23,6 +23,9 @@ $sw.Start()
 . (Resolve-Path "$global:AWI/Constants/Constants.ps1")
 logTime 'Import Constants'
 
+. (Resolve-Path "$setupRoot\CustomWriteHost.ps1")
+logTime 'Import CustomWriteHost'
+
 . (Resolve-Path "$setupRoot\CustomPrompt.ps1")
 logTime 'Import CustomPrompt'
 
@@ -65,7 +68,7 @@ Get-DadJoke
 logTime 'Get DadJoke' -restart $false
 
 # To show time-log: Uncomment the following line
-# Write-Host -ForegroundColor Cyan $log.ToString()
+#Write-Info $log.ToString()
 
 
 #######################################
@@ -117,6 +120,6 @@ function timeTesting {
   'Log some final code'
   logTestingTime 'Get-GitPrompt2' -restart $false
 
-  Write-Host -ForegroundColor Cyan $testingTimerLog.ToString()
+  Write-info $testingTimerLog.ToString()
   [void]$testingTimerLog.Clear()
 }

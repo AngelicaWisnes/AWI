@@ -62,34 +62,6 @@ function Get-ChocoUpgradeLists {
 }
 
 
-function upgradeSkip {
-  #$toSkip = @(
-  #  'Microsoft.dotnetRuntime',
-  #  'Microsoft.dotnet',
-  #  'Python.Python.3',
-  #  "OpenWhisperSystems.Signal",
-  #  "Spotify.Spotify"
-  #)
-
-  $skippedPackages = @()
-
-  foreach ($package in $upgradeList_winget) {
-    # If (-not ($toSkip -contains $package.Id)) {}
-    If ($package.Version -ne 'Unknown') {
-      winget upgrade $package.id
-    }
-    Else {
-      #$skippedPackages += $package
-    }
-  }
-
-  If ($skippedPackages.Count -gt 0) {
-    Write-Host -ForegroundColor Cyan 'The following packages were not upgraded'
-    $skippedPackages | Format-Table
-  }
-}
-
-
 function Get-UpgradeLists {
   Get-WingetUpgradeList
   Get-ChocoUpgradeLists
@@ -99,5 +71,5 @@ Add-ToFunctionList -category 'Upgrading' -name 'u' -value 'Get upgrade lists'
 
 
 function Get-UpgradeListsInfo {
-  OUT $(PE -txt:"Enter 'u' to list all available 'winget'- and 'choco'-upgrades" -fg:$global:colors.DeepPink) -NoNewlineStart
+  Write-Host "Enter 'u' to list all available 'winget'- and 'choco'-upgrades"
 }
