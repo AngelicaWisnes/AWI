@@ -211,5 +211,3 @@ function Write-Info {
 
 # Example usage
 # Write-Host ('This {0}is {1}a{2} test' -f (cfg $RGBs.Yellow), (cbg $RGBs.Yellow), (cfbg $RGBs.ElectricIndigo $RGBs.Gray))
-
-#\$global:colors | \$colors\b | \[color\] | \bOUT\b | \bPE\b | printelement | \$Global\. | -ForegroundColor | -BackgroundColor | Write-.* -message
