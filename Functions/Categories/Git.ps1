@@ -25,6 +25,7 @@ Add-ToFunctionList -category 'Git' -name 'a' -value 'git add args'
 
 function Get-GitBranchType {
   If (-not (Test-IsGitRepo)) { Return }
+  Write-Prompt 'Please choose a branch type:'
   Show-NavigableMenu -menuHeader:'Branch-type' -options:@(
     [NavigableMenuElement]@{trigger = '0'; label = 'feat'; action = { Return 'feat/' } },
     [NavigableMenuElement]@{trigger = '1'; label = 'fix'; action = { Return 'fix/' } },
@@ -34,13 +35,14 @@ function Get-GitBranchType {
     [NavigableMenuElement]@{trigger = 'N'; label = 'NONE'; action = { Return '' } }
   )
 }
-
-
+  
+  
 function Get-GitBranchPrefix {
   If (-not (Test-IsGitRepo)) { Return }
   $systemDependentPrefixes = Get-SystemDependentBranchPrefixes
   If ($systemDependentPrefixes.Count -eq 0) { Return '' }
-
+  Write-Prompt 'Please choose a branch prefix:'
+  
   $options = @()
   $systemDependentPrefixes | ForEach-Object {
     $trigger = If ($systemDependentPrefixes.IndexOf($_) -lt 10) { $systemDependentPrefixes.IndexOf($_).ToString() } Else { $null }
@@ -54,13 +56,13 @@ function Get-GitBranchPrefix {
 
 function GitCreateNewBranch {
   If (-not (Test-IsGitRepo)) { Return }
-  Write-Info 'Initiating new branch creation. Please choose a branch type:'
+  Write-Initiate 'New branch creation'
   $branchType = Get-GitBranchType
   $branchPrefix = Get-GitBranchPrefix
   $branchNamePrefix = '{0}{1}' -f $branchType, $branchPrefix
-
-  Write-Info "Initiating git checkout -b `n`tName-length  $global:FIFTY_CHARS `n`tBranch-name: $branchNamePrefix" -NoNewline
-
+  
+  Write-Prompt "Preparing 'git checkout -b'. Please enter branch-name" -NoNewline
+  Write-Info "`tName-length  $global:FIFTY_CHARS `n`tBranch-name: $branchNamePrefix" -NoNewline
   $branchInput = Get-ColoredInput
   $branchName = $branchNamePrefix + $branchInput
 
@@ -82,7 +84,8 @@ Add-ToFunctionList -category 'Git' -name 'c' -value 'git commit'
 
 function GitCommitWithMessage {
   If (-not (Test-IsGitRepo)) { Return }
-  Write-Info "Initiating git commit -m `n`tMessage-length  $global:FIFTY_CHARS `n`tCommit message: " -NoNewline
+  Write-Prompt "Preparing 'git commit -m'. Please enter commit-message" -NoNewline
+  Write-Info "`tMessage-length  $global:FIFTY_CHARS `n`tCommit message: " -NoNewline
 
   $commitMessage = Get-ColoredInput
   Write-Info ("Trying: {0}git commit -m '{1}'`n" -f (cfg $Global:RGBs.DarkCyan), $commitMessage)
@@ -165,8 +168,9 @@ Add-ToFunctionList -category 'Git' -name 'glc' -value 'Get total line count in r
 
 function GitCombinePreviousCommits {
   If (-not (Test-IsGitRepo)) { Return }
-  git log -n 5
-  Write-Info "Initiating 'git reset --soft <hash>' to combine all commits done after given hash
+  Write-Initiate "Commit-combination with 'git reset --soft <hash>', to combine all commits done after given hash`n"
+  git log -n 3
+  Write-Prompt "
   `tPlease provide the commit-hash belonging to the last commit
   `tdone BEFORE the first commit you want to include in this process, according to git log
   `tCommit-Hash: " -NoNewline
@@ -262,7 +266,9 @@ Add-ToFunctionList -category 'Git' -name 'gr' -value 'git reset --hard'
 
 function GitRenameBranch {
   If (-not (Test-IsGitRepo)) { Return }
-  Write-Info "Initiating a renaming of current branch. Enter the new branch name `n`tName-length  $global:FIFTY_CHARS `n`tBranch-name: " -NoNewline
+  Write-Initiate 'Renaming of current branch'
+  Write-Prompt 'Please enter new branch-name' -NoNewline
+  Write-Info "`tName-length  $global:FIFTY_CHARS `n`tBranch-name: $branchNamePrefix" -NoNewline
 
   $newBranchName = Get-ColoredInput
   $oldBranchName = Get-CurrentGitBranch
@@ -443,7 +449,7 @@ Add-ToFunctionList -category 'Git' -name 'rlb' -value 'Git rebase local branch'
 
 function GitDeleteLocalBranchesDeletedFromRemote {
   If (-not (Test-IsGitRepo)) { Return }
-  Write-Info 'Initiating deletion of local branches that have been deleted from remote: '
+  Write-Initiate 'Deletion of local branches that have been deleted from remote'
 
   git fetch --prune *> $null 2>&1
 
@@ -539,16 +545,16 @@ function Get-PnpmBiomeLintList {
     $shortPath = ''
     $message = ''
     
-    if ($filteredOutput[$i] -match '^(?<path>\S+:\d+:\d+)') {
+    If ($filteredOutput[$i] -match '^(?<path>\S+:\d+:\d+)') {
       $fullPath = $matches['path']
       $shortPath = $fullPath -replace '^.+\\', ''
       $maxShortPathLength = [Math]::Max($maxShortPathLength, $shortPath.Length)
       
-      if ($i + 1 -lt $filteredOutput.Length) { $message = $filteredOutput[++$i] }
-      else { $message = 'No message provided' }
+      If ($i + 1 -lt $filteredOutput.Length) { $message = $filteredOutput[++$i] }
+      Else { $message = 'No message provided' }
     }
     
-    if ($fullPath -ne '' -and $shortPath -ne '' -and $message -ne '') {
+    If ($fullPath -ne '' -and $shortPath -ne '' -and $message -ne '') {
       $results += [pscustomobject]@{ fullPath = $fullPath; shortPath = $shortPath; message = $message }
     }
   }

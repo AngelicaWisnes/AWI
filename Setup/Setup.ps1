@@ -75,6 +75,9 @@ logTime 'Get DadJoke' -restart $false
 ###      SETTINGS AND SHORTCUTS     ###
 #######################################
 
+# Use UTF-8 encoding for all files
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 # Shows navigable menu of all options when hitting Tab
 Set-PSReadlineKeyHandler -Key Tab -Function MenuComplete
 Set-PSReadLineKeyHandler -Key Ctrl+a -Function PossibleCompletions

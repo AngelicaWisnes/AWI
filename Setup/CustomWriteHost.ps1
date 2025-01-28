@@ -195,6 +195,16 @@ function Write-Host {
   & $OriginalWriteHost -Object:$finalMessage -NoNewline:$NoNewline 
 }
 
+function Write-Initiate {
+  param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
+  Write-Host ("`n{0}Initiating - {1}" -f (cfg $Global:RGBs.White), $message) -NoNewline:$NoNewLine
+}
+
+function Write-Prompt {
+  param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
+  Write-Host ('{0}{1}' -f (cfg $Global:RGBs.Yellow), $message) -NoNewline:$NoNewLine
+}
+
 function Write-Fail {
   param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
   Write-Host ("`n{0}Fail - {1}" -f (cfg $Global:RGBs.Red), $message) -NoNewline:$NoNewLine
@@ -204,6 +214,7 @@ function Write-Success {
   param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
   Write-Host ("`n{0}Success - {1}" -f (cfg $Global:RGBs.Jade), $message) -NoNewline:$NoNewLine
 }
+
 function Write-Info {
   param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
   Write-Host ("`n{0}{1}" -f (cfg $Global:RGBs.Cyan), $message) -NoNewline:$NoNewLine

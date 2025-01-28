@@ -15,18 +15,18 @@ function Install-AppFromWinget {
   param([Parameter(Mandatory)][String]$appID)
   $psScriptBlock = [scriptblock]::Create("winget install --id '$appID'")
 
-  Write-Info ('Starting - Winget install --id {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
+  Write-Initiate ('Winget install --id {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
   If ($(Confirm-Action -Prompt "Installing $appID - Do you want to proceed?")) {
     $ps5Process = Start-Process powershell -ArgumentList '-NoProfile', '-Command', $psScriptBlock -PassThru
     $ps5Process.WaitForExit()
   }
 
   If (Test-AppIsInstalled -appID $appID) {
-    Write-Success ('Finished - Installing {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
+    Write-Success ('Finished installing {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
     Return $true
   }
   Else {
-    Write-Fail ('Failed - Installing {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
+    Write-Fail ('Failed installing {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
     Return $false
   }
 }
@@ -80,10 +80,10 @@ function Get-WingetFlagNameByAppID {
 
 
 function Install-Apps {
-  Write-Info 'Initiating - Winget app installation'
+  Write-Initiate 'Winget app installation'
   
   foreach ($appID in $wingetAppIDs) {
-    Write-Info ('Starting - Procedure: {0}{1}' -f (cfg $Global:RGBs.MintGreen), 'appID')
+    Write-Initiate ('Installing-procedure: {0}{1}' -f (cfg $Global:RGBs.MintGreen), 'appID')
 
     $flagName = Get-WingetFlagNameByAppID -appID $appID
     If (-not $(Test-AppShouldBeInstalled -appID $appID)) { continue }
@@ -96,10 +96,10 @@ function Install-Apps {
     Else { Write-Success ('Successfully installed {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID) }
 
     Add-Flag -flagName $flagName
-    Write-Success ('Finished - Procedure: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
+    Write-Success ('Finished procedure: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $appID)
   }
 
-  Write-Success 'Finished - Winget app installation'
+  Write-Success 'Finished winget app installation'
 }
 
 
