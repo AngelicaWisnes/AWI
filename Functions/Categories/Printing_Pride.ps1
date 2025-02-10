@@ -43,7 +43,7 @@ function Get-SlimFlagLine {
 
   If (-not $NoNewlineStart) { Write-Host }
   For ($i = 0; $i -lt $numberOfColors; $i++) {
-    Write-Host ('{0}{1}' -f (cbg $colors[$i]), $(If ($i -eq $numberOfColors - 1) { $restSpaces } Else { $spaces })) -NoNewline
+    Write-Host ('{0}{1}' -f (cbg $colors[$i]), $(If ($i -eq $numberOfColors - 1) { $restSpaces } Else { $spaces })) -NoNewline:$($i -lt $numberOfColors - 1)
   }
 }
 

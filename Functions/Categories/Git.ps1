@@ -160,7 +160,7 @@ Add-ToFunctionList -category 'Git' -name 'gmb' -value 'Get git master branch'
 
 function Get-TotalLineCountInRepo { 
   If (-not (Test-IsGitRepo)) { Return }
-  git diff --stat $(git hash-object -t tree /dev/null) 
+  git diff --stat $(git hash-object -t tree /dev/null) -- ":!$Global:AWI\Logo\Images" ":!$Global:AWI\TEMPORARY FILES"
 }
 Set-Alias glc Get-TotalLineCountInRepo
 Add-ToFunctionList -category 'Git' -name 'glc' -value 'Get total line count in repo'
@@ -391,7 +391,7 @@ Set-Alias s Get-GitStatusStandard
 Add-ToFunctionList -category 'Git' -name 's' -value 'git status'
 
 
-function GitHandleBranches {
+function Invoke-GitBranchHandler {
   If (-not (Test-IsGitRepo)) { Return }
 
   $options = @(
@@ -403,7 +403,7 @@ function GitHandleBranches {
   )
   Show-NavigableMenu -menuHeader:'Branch handling' -options:$options
 }
-Set-Alias b GitHandleBranches
+Set-Alias b Invoke-GitBranchHandler
 Add-ToFunctionList -category 'Git' -name 'b' -value 'Git handle branches'
 
 
@@ -495,15 +495,18 @@ function Get-CoverageReport {
   $GetElementColor = { param([string]$element) ($Global:RGBs.DeepPink, $Global:RGBs.Jade)[$element -match '100'] }
 
   # Print the coverage report in the specified order
-  Write-Host ("`n{0}{1}`n{2}`n{3}" -f (cfg $Global:RGBs.Jade), ($shortenedDivider -replace '-', '¯' ), $shortenedHeader, $shortenedDivider) -NoNewline
+  $sb = [System.Text.StringBuilder]::new()
+  [void]$sb.Append(("`n{0}{1}`n{0}{2}`n{0}{3}" -f (cfg $Global:RGBs.Jade), ($shortenedDivider -replace '-', '¯'), $shortenedHeader, $shortenedDivider))
   Foreach ( $line in $shortenedContent ) {
     $fullyCovered = ($line -split ' 100 ').Length - 1 -eq 4
 
-    Write-Host "`n`t$frame " -NoNewline
-    If ( $fullyCovered) { Write-Host ('{0}{1}{2}' -f (cfg $Global:RGBs.Jade), $line, $frame) -NoNewline }
-    Else { $line.Split('|') | ForEach-Object { Write-Host ('{0}{1}{2}' -f (cfg $($GetElementColor.Invoke($_))), $_, $frame) -NoNewline } }
+    [void]$sb.Append(("`n`t$frame "))
+    If ( $fullyCovered) { [void]$sb.Append(('{0}{1}{2}' -f (cfg $Global:RGBs.Jade), $line, $frame)) }
+    Else { $line.Split('|') | ForEach-Object { [void]$sb.Append(('{0}{1}{2}' -f (cfg $($GetElementColor.Invoke($_))), $_, $frame)) } }
   }
-  Write-Host ("`n{0}{1}" -f (cfg $Global:RGBs.Jade), ($shortenedDivider -replace '-', '.' ))
+  [void]$sb.Append(("`n{0}{1}{2}" -f (cfg $Global:RGBs.Jade), ($shortenedDivider -replace '-', '.' ), (cr)))
+
+  $sb.ToString()
 }
 Set-Alias gcr Get-CoverageReport
 Add-ToFunctionList -category 'Git' -name 'gcr' -value 'Get jest coverage report'
@@ -572,3 +575,36 @@ function Get-PnpmBiomeLintList {
 }
 Set-Alias pbl Get-PnpmBiomeLintList
 Add-ToFunctionList -category 'Git' -name 'pbl' -value 'Get navigable pnpm biome lint list'
+
+function Get-PackageManager {
+  Write-Initiate 'Getting package manager for the current project'
+  $currentPath = (Get-Location).Path
+  $stopPath = $Global:DEFAULT_START_PATH.Path
+  $packageJsonFileList = @()
+
+  If ($currentPath -notlike "$stopPath*") { return Write-Fail "The current path is not a subdirectory of the stop path:`n`t'$stopPath'" }
+  
+  Write-Info 'Searching for package.json files in the current project'
+  while ($currentPath -like "$stopPath*") {
+    $packageJsonPath = Join-Path -Path $currentPath -ChildPath 'package.json'
+    If (Test-Path -Path $packageJsonPath) { $packageJsonFileList += $packageJsonPath }
+    
+    $parentPath = Split-Path -Path $currentPath -Parent
+    If ($parentPath -eq $currentPath) { break }
+    $currentPath = $parentPath
+  }
+  
+  If ($packageJsonFileList.Count -eq 0) { return Write-Fail 'No package.json files found in the current project' }
+  
+  Write-Info 'Checking for package manager in the package.json files'
+  foreach ($file in $packageJsonFileList) {
+    $jsonContent = Get-Content -Path $file -Raw | ConvertFrom-Json
+    If ($jsonContent.packageManager) {
+      $packageManager = $jsonContent.packageManager -split '@' | Select-Object -First 1
+      Write-Success ("Package manager found: {0}$packageManager" -f (cfg $Global:RGBs.MintGreen), $packageManager)
+      Return $packageManager
+    }
+  }
+
+  Write-Fail 'No package manager found in any of the package.json files'
+}

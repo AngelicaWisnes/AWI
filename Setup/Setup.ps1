@@ -96,6 +96,12 @@ Set-PSReadLineKeyHandler -Chord Ctrl+2 -ScriptBlock {
   [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
 }
 
+Set-PSReadLineKeyHandler -Chord Ctrl+b -ScriptBlock {
+  [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+  [Microsoft.PowerShell.PSConsoleReadLine]::Insert('Invoke-GitBranchHandler')
+  [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+}
+
 # Utility-function to test speed of code, while developing
 function timeTesting {
   $testingStopwatch = [Diagnostics.Stopwatch]::new()
