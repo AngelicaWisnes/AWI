@@ -1,3 +1,4 @@
+angelicawisnes.awi-red-specter
 angelicawisnes.redspecter
 arjun.swagger-viewer
 biomejs.biome
