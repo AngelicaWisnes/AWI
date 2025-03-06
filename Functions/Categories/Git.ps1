@@ -476,33 +476,48 @@ Set-Alias dlb GitDeleteLocalBranchesDeletedFromRemote
 Add-ToFunctionList -category 'Git' -name 'dlb' -value 'Git delete local branches deleted from remote'
 
 function Get-CoverageReport {
+  param([string]$focus)
   If (-not (Test-IsGitRepo)) { Return }
   $jestOutput = pnpm jest --coverage --coverageReporters=text --silent
   
   $coverageHeader = $jestOutput | Select-String -Pattern '^File\s+\|'
-  $coverageList = $jestOutput | Select-String -Pattern '^\s*\S+\.\S+\s+\|\s+\d+' | Where-Object { $_ -notmatch '^\*\*' }
   $coverageLineDivider = $jestOutput | Select-String -Pattern '^-{3,}' | Select-Object -First 1
+  $coverageList = $jestOutput | Select-String -Pattern '(^All files\s+\||^\s*\S+\.\S+\s+\|\s+\d+)' | Where-Object { $_ -notmatch '^\*\*' }
 
   $firstLineColumnLength = ($coverageList[0].Matches[0].Value).Split('|')[0].Length
   $totalNameLength = $coverageList | ForEach-Object { $_.Matches[0].Value.Split('|')[0].Trim().Length } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
-  $numberOfSpacesToBeRemoved = $firstLineColumnLength - ($totalNameLength + 15)
+  $numberOfSpacesToBeRemoved = $firstLineColumnLength - ($totalNameLength + 5)
 
   $shortenedDivider = "`t|-" + ($coverageLineDivider -replace "-{$numberOfSpacesToBeRemoved}\|", '|') + '|'
   $shortenedHeader = "`t| " + ($coverageHeader -replace " {$numberOfSpacesToBeRemoved}\|", '|') + '|'
   $shortenedContent = $coverageList | ForEach-Object { $_ -replace " {$numberOfSpacesToBeRemoved}\|", '|' }
   
   $frame = ('{0}|' -f (cfg $Global:RGBs.Jade))
-  $GetElementColor = { param([string]$element) ($Global:RGBs.DeepPink, $Global:RGBs.Jade)[$element -match '100'] }
+  $GetElementColor = { param([string]$element) 
+    If ($element -match '100') { Return  $Global:RGBs.Jade }
+    Elseif ($focus -and $element -match $focus) { Return  $Global:RGBs.Yellow }
+    Else { Return  $Global:RGBs.DeepPink }
+  }
 
   # Print the coverage report in the specified order
   $sb = [System.Text.StringBuilder]::new()
   [void]$sb.Append(("`n{0}{1}`n{0}{2}`n{0}{3}" -f (cfg $Global:RGBs.Jade), ($shortenedDivider -replace '-', '¯'), $shortenedHeader, $shortenedDivider))
   Foreach ( $line in $shortenedContent ) {
     $fullyCovered = ($line -split ' 100 ').Length - 1 -eq 4
-
+    
     [void]$sb.Append(("`n`t$frame "))
     If ( $fullyCovered) { [void]$sb.Append(('{0}{1}{2}' -f (cfg $Global:RGBs.Jade), $line, $frame)) }
-    Else { $line.Split('|') | ForEach-Object { [void]$sb.Append(('{0}{1}{2}' -f (cfg $($GetElementColor.Invoke($_))), $_, $frame)) } }
+    Elseif ($line -match 'All files') { 
+      $line.Split('|') | ForEach-Object { [void]$sb.Append(('{0}{1}{2}' -f (cfg $Global:RGBs.LightSlateBlue), $_, $frame)) } 
+      [void]$sb.Append(("`n{0}{1}" -f (cfg $Global:RGBs.Jade), $shortenedDivider))
+    }
+    Else {
+      $elements = $line.Split('|')
+      for ($i = 0; $i -lt $elements.Length; $i++) {
+        $color = If ($i -eq $elements.Length - 1) { $Global:RGBs.DeepPink } Else { $GetElementColor.Invoke($elements[$i]) }
+        [void]$sb.Append(('{0}{1}{2}' -f (cfg $color), $elements[$i], $frame)) 
+      } 
+    }
   }
   [void]$sb.Append(("`n{0}{1}{2}" -f (cfg $Global:RGBs.Jade), ($shortenedDivider -replace '-', '.' ), (cr)))
 
@@ -575,6 +590,47 @@ function Get-PnpmBiomeLintList {
 }
 Set-Alias pbl Get-PnpmBiomeLintList
 Add-ToFunctionList -category 'Git' -name 'pbl' -value 'Get navigable pnpm biome lint list'
+
+
+function Get-PnpmTypeCheckList {
+  $output = pnpm tsc -b --pretty 2>&1 | Out-String -Stream | ForEach-Object { $_ -replace "`e\[[\d;]*[a-zA-Z]", '' }
+  $filteredOutput = $output -split "`n" | Where-Object { $_.Length -ge 3 -and $_[0] -ne ' ' }
+  
+  $results = @()
+  $maxShortPathLength = 0
+
+  for ($i = 0; $i -lt $filteredOutput.Length; $i++) {
+    $fullPath = ''
+    $shortPath = ''
+    $message = ''
+    
+    If ($filteredOutput[$i] -match '^(?<path>\S+:\d+:\d+)') {
+      $fullPath = $matches['path']
+      $shortPath = $fullPath -replace '^.+\/', ''
+      $maxShortPathLength = [Math]::Max($maxShortPathLength, $shortPath.Length)
+      
+      If ($i + 1 -lt $filteredOutput.Length) { $message = $filteredOutput[++$i] }
+      Else { $message = 'No message provided' }
+    }
+    
+    If ($fullPath -ne '' -and $shortPath -ne '' -and $message -ne '') {
+      $results += [pscustomobject]@{ fullPath = $fullPath; shortPath = $shortPath; message = $message }
+    }
+  }
+
+  $options = @()
+  $results | ForEach-Object {
+    $goToPath = $_.fullPath
+    $options += [NavigableMenuElement]@{
+      label  = $_.shortPath.PadRight($maxShortPathLength) + '   ' + $_.message
+      action = [scriptblock]::Create("code --goto '$goToPath'")
+    }
+  }
+  
+  Show-NavigableMenu -menuHeader:'Pnpm Type Check' -options:$options
+}
+Set-Alias ptc Get-PnpmTypeCheckList
+Add-ToFunctionList -category 'Git' -name 'ptc' -value 'Get navigable pnpm type-check list'
 
 function Get-PackageManager {
   Write-Initiate 'Getting package manager for the current project'
