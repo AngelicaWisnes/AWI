@@ -5,7 +5,7 @@
 ########################
 # Define function-list #
 ########################
-function ColorizeJade { param([string]$str); Return ('{0}{1}{2}' -f (cfg $Global:RGBs.Jade), $str, (cr)) }
+function ColorizeJade { param([string]$str); Return ('{0}{1}{2}' -f $Global:RGBs.Jade.fg, $str, $Global:RGB_RESET) }
 class FunctionListElement { [string]$category ; [string]$name ; [string]$value ; [string]$fillerChar }
 
 $ListElement_Top = [FunctionListElement]@{ category = ''; name = ''; value = ''; fillerChar = '¯' }
@@ -133,11 +133,11 @@ function Get-ListOfFunctionsAndAliases {
     $SingleList | ForEach-Object { [void]$sb.AppendLine("$indent{0}" -f (FormatElement -element:$_)) }
   }
 
-  Write-Host ('{0}{1}' -f (cfg $Global:RGBs.DeepPink), $sb.ToString())
+  Write-Host ('{0}{1}' -f $Global:RGBs.DeepPink.fg, $sb.ToString())
 }
 Set-Alias l Get-ListOfFunctionsAndAliases
 Add-ToFunctionList -category 'Other' -name 'l' -value 'Get list of functions and aliases'
 
 function Get-FunctionListInfo {
-  Write-Host ("{0}Enter 'l' to list all AWI-defined functions and aliases" -f (cfg $Global:RGBs.DeepPink))
+  Write-Host ("{0}Enter 'l' to list all AWI-defined functions and aliases" -f $Global:RGBs.DeepPink.fg)
 }

@@ -13,23 +13,23 @@ function Test-FlagExists {
 
 function Add-Flag {
   param ([Parameter(Mandatory)][string]$flagName)
-  Write-Info ('Adding flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName)
+  Write-Info ('Adding flag: {0}' -f (color_focus $flagName))
   $flagFilePath = Join-Path -Path $FLAG_PATH -ChildPath "$flagName.flag"
-  If (Test-FlagExists -flagName $flagName) { Return Write-Success ('Flag already exists: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName) }
+  If (Test-FlagExists -flagName $flagName) { Return Write-Success ('Flag already exists: {0}' -f (color_focus $flagName)) }
 
   If (-Not (Test-FlagExists -flagName $flagName)) { New-Item -ItemType File -Path $flagFilePath -Force | Out-Null }
-  If (Test-FlagExists -flagName $flagName) { Write-Success ('Successfully added flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName) }
-  Else { Write-Fail ('Failed to add flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName) }
+  If (Test-FlagExists -flagName $flagName) { Write-Success ('Successfully added flag: {0}' -f (color_focus $flagName)) }
+  Else { Write-Fail ('Failed to add flag: {0}' -f (color_focus $flagName)) }
 }
 
 function Remove-Flag {
   param ([Parameter(Mandatory)][string]$flagName)
-  Write-Info ('Removing flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName)
+  Write-Info ('Removing flag: {0}' -f (color_focus $flagName))
   $flagFilePath = Join-Path -Path $FLAG_PATH -ChildPath "$flagName.flag"
   If (Test-FlagExists -flagName $flagName) { Remove-Item -Path $flagFilePath -Force }
 
-  If (Test-FlagExists -flagName $flagName) { Write-Fail ('Failed to remove flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName) }
-  Else { Write-Success ('Successfully removed flag: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $flagName) }
+  If (Test-FlagExists -flagName $flagName) { Write-Fail ('Failed to remove flag: {0}' -f (color_focus $flagName)) }
+  Else { Write-Success ('Successfully removed flag: {0}' -f (color_focus $flagName)) }
 }
 
 function Set-FlagPath {

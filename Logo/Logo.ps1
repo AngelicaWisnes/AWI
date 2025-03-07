@@ -177,7 +177,7 @@ function Get-ArtRGB {
       $bg_color = If ( $i % $bg_linesOfEachColor -eq 0 -and $bg_colorNumber -lt $bg_numberOfColors ) { $bg_colors[++$bg_colorNumber] } Else { $bg_colors[$bg_colorNumber] }
     } 
 
-    Write-Host ('{0}{1}' -f (cfbg $fg_color $bg_color), $lines[$i])
+    Write-Host ('{0}{1}' -f (color_fg_bg $fg_color $bg_color), $lines[$i])
   }
 }
 
@@ -216,7 +216,7 @@ function Get-Explanation {
   param( [string]$expl )
   If (-not $expl) { Return }
   $windowWidth, $_ = Get-WindowDimensions
-  Write-Host ('{0}{1}' -f (cfg $Global:RGBs.DeepPink), $expl.PadLeft($windowWidth))
+  Write-Host ('{0}{1}' -f $Global:RGBs.DeepPink.fg, $expl.PadLeft($windowWidth))
 }
 
 
@@ -287,7 +287,7 @@ function Get-HeartStampedLogo {
       $isHeart = $_.Substring(0, 1) -eq 'H'
       $fg_color = If ($isHeart) { $fg_heart_color } Else { $fg_logo_color }
       $bg_color = If ($isHeart) { $bg_heart_color } Else { $bg_logo_color }
-      Write-Host ('{0}{1}' -f (cfbg $fg_color $bg_color), $_) -NoNewline
+      Write-Host ('{0}{1}' -f (color_fg_bg $fg_color $bg_color), $_) -NoNewline
     }
     Write-Host 
   }

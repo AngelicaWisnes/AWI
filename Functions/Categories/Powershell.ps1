@@ -5,7 +5,7 @@
 function Confirm-Action {
   param([Parameter(Mandatory)][String] $Prompt)
 
-  Write-Host ('{0}{1} [Y/N] (Default - N): ' -f (cfg $Global:RGBs.White), $Prompt) -NoNewline
+  Write-Host ('{0}{1} [Y/N] (Default - N): ' -f $Global:RGBs.White.fg, $Prompt) -NoNewline
   $userInput = $Host.UI.RawUI.ReadKey().Character.ToString()
   If ($private:userInput.ToUpper() -eq 'Y') {
     Write-Info 'Proceeding with action...'
@@ -98,7 +98,7 @@ function Get-SelectableFileTree {
       $Index.Value++
       $currentRelativePath = If ($RelativePath) { Join-Path -Path $RelativePath -ChildPath $folder.Name } Else { $folder.Name }
       $global:folderPaths += $currentRelativePath
-      If (-not $preSelection) { Write-Host ('{0}  {1,4} {2}- {3}' -f (cfg $Global:RGBs.Cyan), $Index.Value, $Prefix, $folder.Name) }
+      If (-not $preSelection) { Write-Host ('{0}  {1,4} {2}- {3}' -f $Global:RGBs.Cyan.fg, $Index.Value, $Prefix, $folder.Name) }
       Show-Tree -BasePath $folder.FullName -Index $Index -Prefix "$Prefix- " -RelativePath $currentRelativePath
     }
   }
@@ -120,7 +120,7 @@ function Get-FunctionDefinition {
   $functionName = Get-FunctionNameFromCommandName( $commandName )
   If (-not $functionName) { Return }
   $codeBlock = Get-FunctionDefinitionAsString $functionName
-  Write-Host ('{0}{1}' -f (cfg $Global:RGBs.White), $codeBlock)
+  Write-Host ('{0}{1}' -f $Global:RGBs.White.fg, $codeBlock)
 }
 Set-Alias see Get-FunctionDefinition
 Add-ToFunctionList -category 'PowerShell' -name 'see' -value 'See the code-block of function'
@@ -181,7 +181,7 @@ function Show-NavigableMenu {
   $rewritableLines = "`n" * $optionList.Length
   $lineWidth = (($optionList.label) | Measure-Object -Maximum -Property:Length).Maximum
   $headerLine = '=' * ($lineWidth / 2)
-  Write-Host ("`n{0}{1} {2} {1} {3}" -f (cfg $Global:RGBs.White), $headerLine, $menuHeader, $rewritableLines)
+  Write-Host ("`n{0}{1} {2} {1} {3}" -f $Global:RGBs.White.fg, $headerLine, $menuHeader, $rewritableLines)
   
   $initialCursorPosition = [System.Console]::CursorTop - $optionList.Length
   $initialCursorSize = $Host.UI.RawUI.CursorSize
@@ -192,8 +192,8 @@ function Show-NavigableMenu {
     for ($i = 0; $i -lt $optionList.Length; $i++) {
       $option = $optionList[$i]
       $label = If ($option.trigger) { "[$($option.trigger)] $($option.label)" } Else { $option.label }
-      If ($i -eq $currentSelection) { Write-Host ('{0}>> {1}' -f (cfg $Global:RGBs.Cyan), $label) }
-      Elseif ($i -eq ($optionList.Length - 1)) { Write-Host ('{0}   {1}' -f (cfg $Global:RGBs.Yellow), $label) }
+      If ($i -eq $currentSelection) { Write-Host ('{0}>> {1}' -f $Global:RGBs.Cyan.fg, $label) }
+      Elseif ($i -eq ($optionList.Length - 1)) { Write-Host ('{0}   {1}' -f $Global:RGBs.Yellow.fg, $label) }
       Else { Write-Host "   $label" }
     }
   }
@@ -227,8 +227,8 @@ function Show-NavigableMenu {
   printMenuWithCurrentSelectionHighlighted
 
   $selectedOption = $optionList[$currentSelection] 
-  If ($currentSelection -eq $optionList.Length - 1) { Write-Host ("`n{0}Canceling..." -f (cfg $Global:RGBs.Red)) }
-  Else { Write-Host ("`n{0}Executing..." -f (cfg $Global:RGBs.Cyan)) }
+  If ($currentSelection -eq $optionList.Length - 1) { Write-Host ("`n{0}Canceling..." -f $Global:RGBs.Red.fg) }
+  Else { Write-Host ("`n{0}Executing..." -f $Global:RGBs.Cyan.fg) }
   
   $Host.UI.RawUI.CursorSize = $initialCursorSize
   $selectedOption.action.Invoke()

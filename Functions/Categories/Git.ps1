@@ -66,7 +66,7 @@ function GitCreateNewBranch {
   $branchInput = Get-ColoredInput
   $branchName = $branchNamePrefix + $branchInput
 
-  Write-Info ("Trying: {0}git checkout -b '{1}'`n" -f (cfg $Global:RGBs.DarkCyan), $branchName)
+  Write-Info ("Trying: {0}git checkout -b '{1}'`n" -f $Global:RGBs.DarkCyan.fg, $branchName)
 
   git checkout -b $branchName
 }
@@ -88,7 +88,7 @@ function GitCommitWithMessage {
   Write-Info "`tMessage-length  $global:FIFTY_CHARS `n`tCommit message: " -NoNewline
 
   $commitMessage = Get-ColoredInput
-  Write-Info ("Trying: {0}git commit -m '{1}'`n" -f (cfg $Global:RGBs.DarkCyan), $commitMessage)
+  Write-Info ("Trying: {0}git commit -m '{1}'`n" -f $Global:RGBs.DarkCyan.fg, $commitMessage)
 
   git commit -m $commitMessage
 }
@@ -105,7 +105,7 @@ function GitCheckout {
     $argToCheckout = Get-ColoredInput
   }
 
-  Write-Info ("Initializing following:`n`t{0}git checkout {1}" -f (cfg $Global:RGBs.DarkCyan), $argToCheckout)
+  Write-Info ("Initializing following:`n`t{0}git checkout {1}" -f $Global:RGBs.DarkCyan.fg, $argToCheckout)
   git checkout $argToCheckout
 }
 Set-Alias co GitCheckout
@@ -121,7 +121,7 @@ function GitRebase {
     $argToRebase = Get-ColoredInput
   }
 
-  Write-Info ("Initializing following:`n`t{0}git rebase {1}" -f (cfg $Global:RGBs.DarkCyan), $argToRebase)
+  Write-Info ("Initializing following:`n`t{0}git rebase {1}" -f $Global:RGBs.DarkCyan.fg, $argToRebase)
   git rebase $argToRebase
 }
 Set-Alias gra GitRebase
@@ -177,7 +177,7 @@ function GitCombinePreviousCommits {
 
   $commitHash = Get-ColoredInput
 
-  Write-Info ("Trying: {0}git reset --soft '{1}'`n" -f (cfg $Global:RGBs.DarkCyan), $commitHash)
+  Write-Info ("Trying: {0}git reset --soft '{1}'`n" -f $Global:RGBs.DarkCyan.fg, $commitHash)
 
   git reset --soft $commitHash
 
@@ -492,7 +492,7 @@ function Get-CoverageReport {
   $shortenedHeader = "`t| " + ($coverageHeader -replace " {$numberOfSpacesToBeRemoved}\|", '|') + '|'
   $shortenedContent = $coverageList | ForEach-Object { $_ -replace " {$numberOfSpacesToBeRemoved}\|", '|' }
   
-  $frame = ('{0}|' -f (cfg $Global:RGBs.Jade))
+  $frame = ('{0}|' -f $Global:RGBs.Jade.fg)
   $GetElementColor = { param([string]$element) 
     If ($element -match '100') { Return  $Global:RGBs.Jade }
     Elseif ($focus -and $element -match $focus) { Return  $Global:RGBs.Yellow }
@@ -501,25 +501,25 @@ function Get-CoverageReport {
 
   # Print the coverage report in the specified order
   $sb = [System.Text.StringBuilder]::new()
-  [void]$sb.Append(("`n{0}{1}`n{0}{2}`n{0}{3}" -f (cfg $Global:RGBs.Jade), ($shortenedDivider -replace '-', '¯'), $shortenedHeader, $shortenedDivider))
+  [void]$sb.Append(("`n{0}{1}`n{0}{2}`n{0}{3}" -f $Global:RGBs.Jade.fg, ($shortenedDivider -replace '-', '¯'), $shortenedHeader, $shortenedDivider))
   Foreach ( $line in $shortenedContent ) {
     $fullyCovered = ($line -split ' 100 ').Length - 1 -eq 4
     
     [void]$sb.Append(("`n`t$frame "))
-    If ( $fullyCovered) { [void]$sb.Append(('{0}{1}{2}' -f (cfg $Global:RGBs.Jade), $line, $frame)) }
+    If ( $fullyCovered) { [void]$sb.Append(('{0}{1}{2}' -f $Global:RGBs.Jade.fg, $line, $frame)) }
     Elseif ($line -match 'All files') { 
-      $line.Split('|') | ForEach-Object { [void]$sb.Append(('{0}{1}{2}' -f (cfg $Global:RGBs.LightSlateBlue), $_, $frame)) } 
-      [void]$sb.Append(("`n{0}{1}" -f (cfg $Global:RGBs.Jade), $shortenedDivider))
+      $line.Split('|') | ForEach-Object { [void]$sb.Append(('{0}{1}{2}' -f $Global:RGBs.LightSlateBlue.fg, $_, $frame)) } 
+      [void]$sb.Append(("`n{0}{1}" -f $Global:RGBs.Jade.fg, $shortenedDivider))
     }
     Else {
       $elements = $line.Split('|')
       for ($i = 0; $i -lt $elements.Length; $i++) {
         $color = If ($i -eq $elements.Length - 1) { $Global:RGBs.DeepPink } Else { $GetElementColor.Invoke($elements[$i]) }
-        [void]$sb.Append(('{0}{1}{2}' -f (cfg $color), $elements[$i], $frame)) 
+        [void]$sb.Append(('{0}{1}{2}' -f $color.fg, $elements[$i], $frame))
       } 
     }
   }
-  [void]$sb.Append(("`n{0}{1}{2}" -f (cfg $Global:RGBs.Jade), ($shortenedDivider -replace '-', '.' ), (cr)))
+  [void]$sb.Append(("`n{0}{1}{2}" -f $Global:RGBs.Jade.fg, ($shortenedDivider -replace '-', '.' ), $Global:RGB_RESET))
 
   $sb.ToString()
 }
@@ -577,6 +577,8 @@ function Get-PnpmBiomeLintList {
     }
   }
 
+  If ($results.Count -eq 0) { Return Write-Success 'No biome lint issues found' }
+
   $options = @()
   $results | ForEach-Object {
     $goToPath = $_.fullPath
@@ -618,6 +620,8 @@ function Get-PnpmTypeCheckList {
     }
   }
 
+  If ($results.Count -eq 0) { Return Write-Success 'No type-check errors found' }
+
   $options = @()
   $results | ForEach-Object {
     $goToPath = $_.fullPath
@@ -657,7 +661,7 @@ function Get-PackageManager {
     $jsonContent = Get-Content -Path $file -Raw | ConvertFrom-Json
     If ($jsonContent.packageManager) {
       $packageManager = $jsonContent.packageManager -split '@' | Select-Object -First 1
-      Write-Success ("Package manager found: {0}$packageManager" -f (cfg $Global:RGBs.MintGreen), $packageManager)
+      Write-Success ('Package manager found: {0}' -f (color_focus $packageManager))
       Return $packageManager
     }
   }

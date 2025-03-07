@@ -13,7 +13,7 @@ function Get-FlagLine {
   $windowWidth, $_ = Get-WindowDimensions
   $spaceLength = (' ' * $windowWidth)
   Write-Host
-  $Global:RGBChart[$colorScheme].fg | ForEach-Object { Write-Host ('{0}{1}' -f (cbg $_), $spaceLength) }
+  $Global:RGBChart[$colorScheme].fg | ForEach-Object { Write-Host ('{0}{1}' -f $_.bg, $spaceLength) }
 }
 
 
@@ -43,14 +43,14 @@ function Get-SlimFlagLine {
 
   If (-not $NoNewlineStart) { Write-Host }
   For ($i = 0; $i -lt $numberOfColors; $i++) {
-    Write-Host ('{0}{1}' -f (cbg $colors[$i]), $(If ($i -eq $numberOfColors - 1) { $restSpaces } Else { $spaces })) -NoNewline:$($i -lt $numberOfColors - 1)
+    Write-Host ('{0}{1}' -f $colors[$i].bg, $(If ($i -eq $numberOfColors - 1) { $restSpaces } Else { $spaces })) -NoNewline:$($i -lt $numberOfColors - 1)
   }
 }
 
 
 function Get-RainbowSlimShortLine {
   $spaceLength = '   '
-  $Global:RGBChart['rainbow'].fg | ForEach-Object { Write-Host ('{0}{1}' -f (cbg $_), $spaceLength) -NoNewline }
+  $Global:RGBChart['rainbow'].fg | ForEach-Object { Write-Host ('{0}{1}' -f $_.bg, $spaceLength) -NoNewline }
 }
 
 
@@ -68,9 +68,9 @@ function Get-PrideSmall {
   {0}{1}#{2}###{3}###{4}###{9}#################################{11}
   {0}{1}{2}##{3}###{4}###{10}###################################{11}
   {0}{1}{2}#{3}###{4}###{10}####################################
-  ' -f (cfg $Global:RGBs.PrideWhite), (cfg $Global:RGBs.PridePink), (cfg $Global:RGBs.PrideCyan), (cfg $Global:RGBs.PrideBrown), (cfg $Global:RGBs.PrideBlack), 
-    (cfg $Global:RGBs.PrideRed), (cfg $Global:RGBs.PrideOrange), (cfg $Global:RGBs.PrideYellow), 
-    (cfg $Global:RGBs.PrideGreen), (cfg $Global:RGBs.PrideBlue), (cfg $Global:RGBs.PridePurple), (cr))
+  ' -f $Global:RGBs.PrideWhite.fg, $Global:RGBs.PridePink.fg, $Global:RGBs.PrideCyan.fg, $Global:RGBs.PrideBrown.fg, $Global:RGBs.PrideBlack.fg, 
+    $Global:RGBs.PrideRed.fg, $Global:RGBs.PrideOrange.fg, $Global:RGBs.PrideYellow.fg, 
+    $Global:RGBs.PrideGreen.fg, $Global:RGBs.PrideBlue.fg, $Global:RGBs.PridePurple.fg, $Global:RGB_RESET)
 }
 
 
@@ -100,9 +100,9 @@ function Get-PrideMedium {
   {0}{1}{2}###{3}###{4}###{10}###########################################################################{11}
   {0}{1}{2}##{3}###{4}###{10}############################################################################{11}
   {0}{1}{2}#{3}###{4}###{10}#############################################################################
-  ' -f (cfg $Global:RGBs.PrideWhite), (cfg $Global:RGBs.PridePink), (cfg $Global:RGBs.PrideCyan), (cfg $Global:RGBs.PrideBrown), (cfg $Global:RGBs.PrideBlack), 
-    (cfg $Global:RGBs.PrideRed), (cfg $Global:RGBs.PrideOrange), (cfg $Global:RGBs.PrideYellow), 
-    (cfg $Global:RGBs.PrideGreen), (cfg $Global:RGBs.PrideBlue), (cfg $Global:RGBs.PridePurple), (cr))
+  ' -f $Global:RGBs.PrideWhite.fg, $Global:RGBs.PridePink.fg, $Global:RGBs.PrideCyan.fg, $Global:RGBs.PrideBrown.fg, $Global:RGBs.PrideBlack.fg, 
+    $Global:RGBs.PrideRed.fg, $Global:RGBs.PrideOrange.fg, $Global:RGBs.PrideYellow.fg, 
+    $Global:RGBs.PrideGreen.fg, $Global:RGBs.PrideBlue.fg, $Global:RGBs.PridePurple.fg, $Global:RGB_RESET)
 }
 
 
@@ -132,9 +132,9 @@ function Get-PrideLarge {
   {0}{1}##{2}###{3}###{4}###{10}####################################################################################{11}
   {0}{1}{2}###{3}###{4}###{10}######################################################################################{11}
   {0}{1}{2}#{3}###{4}###{10}########################################################################################
-  ' -f (cfg $Global:RGBs.PrideWhite), (cfg $Global:RGBs.PridePink), (cfg $Global:RGBs.PrideCyan), (cfg $Global:RGBs.PrideBrown), (cfg $Global:RGBs.PrideBlack), 
-    (cfg $Global:RGBs.PrideRed), (cfg $Global:RGBs.PrideOrange), (cfg $Global:RGBs.PrideYellow), 
-    (cfg $Global:RGBs.PrideGreen), (cfg $Global:RGBs.PrideBlue), (cfg $Global:RGBs.PridePurple), (cr))
+  ' -f $Global:RGBs.PrideWhite.fg, $Global:RGBs.PridePink.fg, $Global:RGBs.PrideCyan.fg, $Global:RGBs.PrideBrown.fg, $Global:RGBs.PrideBlack.fg, 
+    $Global:RGBs.PrideRed.fg, $Global:RGBs.PrideOrange.fg, $Global:RGBs.PrideYellow.fg, 
+    $Global:RGBs.PrideGreen.fg, $Global:RGBs.PrideBlue.fg, $Global:RGBs.PridePurple.fg, $Global:RGB_RESET)
 }
 
 
@@ -170,9 +170,9 @@ function Get-PrideLogo {
   {0}{1}##{2}###{3}###{4}###{10}######################################################################################################################{11}
   {0}{1}{2}###{3}###{4}###{10}########################################################################################################################{11}
   {0}{1}{2}#{3}###{4}###{10}##########################################################################################################################
-' -f (cfg $Global:RGBs.PrideWhite), (cfg $Global:RGBs.PridePink), (cfg $Global:RGBs.PrideCyan), (cfg $Global:RGBs.PrideBrown), (cfg $Global:RGBs.PrideBlack), 
-    (cfg $Global:RGBs.PrideRed), (cfg $Global:RGBs.PrideOrange), (cfg $Global:RGBs.PrideYellow), 
-    (cfg $Global:RGBs.PrideGreen), (cfg $Global:RGBs.PrideBlue), (cfg $Global:RGBs.PridePurple), (cr))
+' -f $Global:RGBs.PrideWhite.fg, $Global:RGBs.PridePink.fg, $Global:RGBs.PrideCyan.fg, $Global:RGBs.PrideBrown.fg, $Global:RGBs.PrideBlack.fg, 
+    $Global:RGBs.PrideRed.fg, $Global:RGBs.PrideOrange.fg, $Global:RGBs.PrideYellow.fg, 
+    $Global:RGBs.PrideGreen.fg, $Global:RGBs.PrideBlue.fg, $Global:RGBs.PridePurple.fg, $Global:RGB_RESET)
 }
 
 

@@ -21,8 +21,27 @@
   R, G, B = The color-values for RGB
 #>
 
+# Print-related constants
+$Global:RGB_ESCAPE = "$([char]0x1b)"
+If ($PSVersionTable.PSVersion.Major -gt 5) { $Global:RGB_ESCAPE = "`e" }
+
+
 # Classes
-class RGB { [int]$r; [int]$g; [int]$b; }
+class RGB {
+  [int]$r
+  [int]$g
+  [int]$b
+  [string]$fg
+  [string]$bg
+  
+  RGB([hashtable]$params) {
+    $this.r = $params.r
+    $this.g = $params.g
+    $this.b = $params.b
+    $this.fg = '{0}[0m{0}[38;2;{1};{2};{3}m' -f $Global:RGB_ESCAPE, $this.r, $this.g, $this.b
+    $this.bg = '{0}[0m{0}[48;2;{1};{2};{3}m' -f $Global:RGB_ESCAPE, $this.r, $this.g, $this.b
+  }
+}
 
 
 # Colors
@@ -97,6 +116,13 @@ $Global:RGBs = [ordered]@{
   PrideNbPurple      = [RGB]@{r = 155; g = 89; b = 208; }    #9B59D0
 }
 
+$Global:RGB_RESET = "$Global:RGB_ESCAPE[0m"
+$Global:RGB_INFO = $Global:RGBs.Cyan
+$Global:RGB_SUCCESS = $Global:RGBs.Jade
+$Global:RGB_FAIL = $Global:RGBs.Red
+$Global:RGB_PROMPT = $Global:RGBs.Yellow
+$Global:RGB_INIT = $Global:RGBs.White
+
 $Global:RGBChart = [ordered]@{
   rainbow     = @{
     fg = @( $Global:RGBs.PrideRed, $Global:RGBs.PrideOrange, $Global:RGBs.PrideYellow, $Global:RGBs.PrideGreen, $Global:RGBs.PrideBlue, $Global:RGBs.PridePurple )
@@ -140,34 +166,27 @@ $Global:RGBChart = [ordered]@{
   }
 }
 
-# Print-related constants
-$Global:RGB_ESCAPE = "$([char]0x1b)"
-If ($PSVersionTable.PSVersion.Major -gt 5) { $Global:RGB_ESCAPE = "`e" }
 
 
+##########################
+### Colorize Functions ###
+##########################
 
-function cr {
-  Return "$Global:RGB_ESCAPE[0m"
-}
-function cfg {
-  param ( [Parameter(Mandatory)][RGB]$c )
-  Return "$(cr)$Global:RGB_ESCAPE[38;2;{0};{1};{2}m" -f $c.r, $c.g, $c.b
-}
-function cbg {
-  param ( [Parameter(Mandatory)][RGB]$c )
-  Return "$(cr)$Global:RGB_ESCAPE[48;2;{0};{1};{2}m" -f $c.r, $c.g, $c.b
-}
-function cfbg {
+function color_fg_bg {
   param (
     [Parameter(Position = 0)][RGB]$fc, 
     [Parameter(Position = 1)][RGB]$bc
   )
   If ($null -eq $fc -and $null -eq $bc) { Return '' }
-  Elseif ($null -ne $fc -and $null -eq $bc) { Return (cfg $fc) }
-  Elseif ($null -eq $fc -and $null -ne $bc) { Return (cbg $bc) }
-  Return "$(cr)$Global:RGB_ESCAPE[38;2;{0};{1};{2};48;2;{3};{4};{5}m" -f $fc.r, $fc.g, $fc.b, $bc.r, $bc.g, $bc.b
+  If ($null -ne $fc -and $null -eq $bc) { Return $fc.fg }
+  If ($null -eq $fc -and $null -ne $bc) { Return $bc.bg }
+  Return '{0}[0m{0}[38;2;{1};{2};{3};48;2;{4};{5};{6}m' -f $Global:RGB_ESCAPE, $fc.r, $fc.g, $fc.b, $bc.r, $bc.g, $bc.b
 }
 
+function color_focus {
+  param ([string]$message)
+  Return ('{0}{1}' -f $Global:RGBs.MintGreen.fg, $message)
+}
 
 
 
@@ -176,9 +195,7 @@ function cfbg {
 ###########################
 
 # Check if the original Write-Host is already saved
-if (-not $OriginalWriteHost) {
-  $OriginalWriteHost = Get-Command Write-Host
-}
+If (-not $OriginalWriteHost) { $OriginalWriteHost = Get-Command Write-Host }
 
 # Define the new Write-Host function
 function Write-Host {
@@ -197,28 +214,28 @@ function Write-Host {
 
 function Write-Initiate {
   param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
-  Write-Host ("`n{0}Initiating - {1}" -f (cfg $Global:RGBs.White), $message) -NoNewline:$NoNewLine
+  Write-Host ("`n{0}Initiating - {1}" -f $Global:RGB_INIT.fg, $message) -NoNewline:$NoNewLine
 }
 
 function Write-Prompt {
   param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
-  Write-Host ('{0}{1}' -f (cfg $Global:RGBs.Yellow), $message) -NoNewline:$NoNewLine
+  Write-Host ('{0}{1}' -f $Global:RGB_PROMPT.fg, $message) -NoNewline:$NoNewLine
 }
 
 function Write-Fail {
   param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
-  Write-Host ("`n{0}Fail - {1}" -f (cfg $Global:RGBs.Red), $message) -NoNewline:$NoNewLine
+  Write-Host ("`n{0}Fail - {1}" -f $Global:RGB_FAIL.fg, $message) -NoNewline:$NoNewLine
 }
 
 function Write-Success {
   param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
-  Write-Host ("`n{0}Success - {1}" -f (cfg $Global:RGBs.Jade), $message) -NoNewline:$NoNewLine
+  Write-Host ("`n{0}Success - {1}" -f $Global:RGB_SUCCESS.fg, $message) -NoNewline:$NoNewLine
 }
 
 function Write-Info {
   param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
-  Write-Host ("`n{0}{1}" -f (cfg $Global:RGBs.Cyan), $message) -NoNewline:$NoNewLine
+  Write-Host ("`n{0}{1}" -f $Global:RGB_INFO.fg, $message) -NoNewline:$NoNewLine
 }
 
 # Example usage
-# Write-Host ('This {0}is {1}a{2} test' -f (cfg $RGBs.Yellow), (cbg $RGBs.Yellow), (cfbg $RGBs.ElectricIndigo $RGBs.Gray))
+# Write-Host ('This {0}is {1}a{2} test' -f $Global:RGBs.Yellow.fg, $Global:RGBs.Yellow.bg, (color_fg_bg $Global:RGBs.ElectricIndigo $Global:RGBs.Gray))

@@ -15,8 +15,8 @@ function Test-ResourceExists {
 
 function Confirm-ResourceCreated {
   param ([Parameter(Mandatory)][string]$resourceName)
-  If (Test-ResourceExists -resourceName $resourceName) { Write-Success ('Successfully created resource: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName ) }
-  Else { Write-Fail ('Failed to create resource: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName ) }
+  If (Test-ResourceExists -resourceName $resourceName) { Write-Success ('Successfully created resource: {0}' -f (color_focus $resourceName)) }
+  Else { Write-Fail ('Failed to create resource: {0}' -f (color_focus $resourceName)) }
 }
 
 
@@ -24,32 +24,32 @@ function Remove-Resource {
   param ([Parameter(Mandatory)][string]$resourceName)
   If (-not (Test-ResourceExists -resourceName $resourceName)) { Return $true }
 
-  Write-Info ('Resource already exists: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
+  Write-Info ('Resource already exists: {0}' -f (color_focus $resourceName))
 
   If (-not (Confirm-Action -Prompt "Removing resource `'$resourceName`' to create new instance")) {
-    Write-Info ('Cancelling... {0}{1}{2} not removed' -f (cfg $Global:RGBs.MintGreen), $resourceName, (cfg $Global:RGBs.Cyan) )
+    Write-Info ('Cancelling... {0}{1} not removed' -f (color_focus $resourceName), $Global:RGB_INFO.fg )
     Return $false
   }
 
-  Write-Info ('Removing resource: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
+  Write-Info ('Removing resource: {0}' -f (color_focus $resourceName))
   $resourceFilePath = Join-Path -Path $RESOURCES_PATH -ChildPath $resourceName
   Remove-Item -Path $resourceFilePath -Recurse -Force
 
   If (Test-ResourceExists -resourceName $resourceName) {
-    Write-Fail ('Failed to remove resource: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
+    Write-Fail ('Failed to remove resource: {0}' -f (color_focus $resourceName))
     Return $false
   }
 
-  Write-Success ('Successfully removed resource: {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
+  Write-Success ('Successfully removed resource: {0}' -f (color_focus $resourceName))
   Return $true
 }
 
 
 function Save-Resource {
   param ([Parameter(Mandatory)][string]$resourceName, [Parameter(Mandatory)]$content)
-  Write-Info ('Adding resource {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
+  Write-Info ('Adding resource {0}' -f (color_focus $resourceName))
   $resourceFilePath = Join-Path -Path $RESOURCES_PATH -ChildPath "$resourceName"
-  If (-not (Remove-Resource -resourceName $resourceName)) { Return Write-Info ('Cancelling... {0}{1}{2} not overwritten' -f (cfg $Global:RGBs.MintGreen), $resourceName, (cfg $Global:RGBs.Cyan) ) }
+  If (-not (Remove-Resource -resourceName $resourceName)) { Return Write-Info ('Cancelling... {0}{1} not overwritten' -f (color_focus $resourceName), $Global:RGB_INFO.fg ) }
 
   $content | Out-File -FilePath $resourceFilePath -Force
   Confirm-ResourceCreated -resourceName $resourceName
@@ -60,12 +60,12 @@ function Copy-Resource {
   param ( [Parameter(Mandatory)][string]$resourceName )
   $resourceToCopyPath = "$env:APPDATA\Code\User\$resourceName"
 
-  Write-Info ('Copying VS Code resource {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
+  Write-Info ('Copying VS Code resource {0}' -f (color_focus $resourceName))
 
-  If (-not (Test-Path -Path $resourceToCopyPath)) { Write-Fail ('Failed to copy {0}{1}{2}, because the resource was not found' -f (cfg $Global:RGBs.MintGreen), $resourceName, (cfg $Global:RGBs.Red) ) }
-  If (-not (Remove-Resource -resourceName $resourceName)) { Return Write-Info ('Cancelling... {0}{1}{2} not overwritten' -f (cfg $Global:RGBs.MintGreen), $resourceName, (cfg $Global:RGBs.Cyan) ) }
+  If (-not (Test-Path -Path $resourceToCopyPath)) { Write-Fail ('Failed to copy {0}{1}, because the resource was not found' -f (color_focus $resourceName), $Global:RGB_FAIL.fg ) }
+  If (-not (Remove-Resource -resourceName $resourceName)) { Return Write-Info ('Cancelling... {0}{1} not overwritten' -f (color_focus $resourceName), $Global:RGB_INFO.fg ) }
 
-  Write-Info ('Copying resource {0}{1}' -f (cfg $Global:RGBs.MintGreen), $resourceName )
+  Write-Info ('Copying resource {0}' -f (color_focus $resourceName))
   Copy-Item -Path $resourceToCopyPath -Destination $RESOURCES_PATH -Recurse -Force
   Confirm-ResourceCreated -resourceName $resourceName
 }

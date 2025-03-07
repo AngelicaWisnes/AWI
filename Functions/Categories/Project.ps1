@@ -32,7 +32,7 @@ function proClean {
   )
 
   # If decision is '-1', try to get a decision. If it still is '-1' after deciding, then Return a cancel-statement
-  Write-Host ("`n{0}Cleanup quick-launch project..." -f (cfg $Global:RGBs.White))
+  Write-Host ("`n{0}Cleanup quick-launch project..." -f $Global:RGBs.White.fg)
   If ( $decision -eq -1 ) { $decision = _pro_printChoicesAndGetDecision($projects) }
   If ( $decision -eq -1 ) { Return Write-Info 'Cancelled cleanup' }
 

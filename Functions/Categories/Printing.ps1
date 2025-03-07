@@ -41,7 +41,7 @@ function dance {
 
     for ( $n = 0; $n -lt $LoopCount; $n++ ) {
       for ( $i = 0; $i -lt $frames.count; $i++ ) {
-        Write-Host ("`r`t{0}{1}" -f (cfg $Global:RGBs.Cyan), $($frames[$i])) -NoNewline
+        Write-Host ("`r`t{0}{1}" -f $Global:RGBs.Cyan.fg, $($frames[$i])) -NoNewline
         Start-Sleep -Milliseconds $frameDelay
       }
     }
@@ -60,7 +60,7 @@ function Get-AllAnsiColors {
   If ($Background) { $X = 48 }
   Else { $X = 38 }
   $esc = $Global:RGB_ESCAPE
-  $reset = cr
+  $reset = $Global:RGB_RESET
   0..255 | ForEach-Object {
     $sample = '{0, 4}' -f $_
     $text = "$esc[$X;5;{0}m{1}$reset" -f $_, $sample
@@ -83,7 +83,7 @@ function Get-AllRGBColors {
     for ($g = 0; $g -lt $gs.Count; $g += 15) {
       for ($b = 0; $b -lt $bs.Count; $b += 15) {
         $rgb = [RGB]@{r = $r ; g = $g ; b = $b }
-        Write-Host ('{0}{1}' -f (cbg $rgb), $sample) -NoNewline
+        Write-Host ('{0}{1}' -f $rgb.bg, $sample) -NoNewline
 
         If ( ($b + 1) % 256 -eq 0 ) { Write-Host '' }
       }
@@ -100,7 +100,7 @@ function Get-ImplementedRGBColors {
 
   foreach ($RGB in $Global:RGBs.GetEnumerator()) {
     $c = $RGB.value
-    Write-Host ('{0, 20} RGB: {1, 3}, {2, 3}, {3, 3}  {4}Sample TEXT {5}{6}' -f $RGB.Name, $c.r, $c.g, $c.b, (cfg $c), (cbg $c), $sample)
+    Write-Host ('{0, 20} RGB: {1, 3}, {2, 3}, {3, 3}  {4}Sample TEXT {5}{6}' -f $RGB.Name, $c.r, $c.g, $c.b, $c.fg, $c.bg, $sample)
   }
 }
 Set-Alias implRGBs Get-ImplementedRGBColors
@@ -115,7 +115,7 @@ function Get-ColorCharts {
   foreach ($chart in $Global:RGBChart.GetEnumerator()) {
     OUT $(PE -txt:$chart.Name)
     foreach ($color in $chart.value.fg) {
-      Write-Host ('{0}{1}' -f (cbg $color), $spaceLength)
+      Write-Host ('{0}{1}' -f $color.bg, $spaceLength)
     }
     Write-Host "`n`n"
   }
@@ -149,7 +149,7 @@ function Convert-HexToRgb {
 function Test-HexColor {
   param ([Parameter(Mandatory)][string]$hex )
   $rgb = Convert-HexToRgb $hex
-  Write-Host ("`n{0} = [RGB]{{@r = {1, 3}; g = {2, 3}; b = {3, 3}; }}   {4}Sample TEXT {5}`t`t" -f $hex, $rgb.r, $rgb.g, $rgb.b, (cfg $rgb), (cbg $rgb))
+  Write-Host ("`n{0} = [RGB]{{@r = {1, 3}; g = {2, 3}; b = {3, 3}; }}   {4}Sample TEXT {5}`t`t" -f $hex, $rgb.r, $rgb.g, $rgb.b, $rgb.fg, $rgb.bg)
 }
 Set-Alias thc TestHexColor
 Add-ToFunctionList -category 'Printing' -name 'thc' -value 'Test hex color'

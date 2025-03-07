@@ -1,11 +1,11 @@
 # Hardcode the color-sequences to enhance speed for the prompt
-$colorYellow = cfg $Global:RGBs.Yellow
-$colorDodgerBlue = cfg $Global:RGBs.DodgerBlue
-$colorCyan = cfg $Global:RGBs.Cyan
-$colorDeepPink = cfg $Global:RGBs.DeepPink
-$colorLightSlateBlue = cfg $Global:RGBs.LightSlateBlue
-$colorMintGreen = cfg $Global:RGBs.MintGreen
-$colorMonaLisa = cfg $Global:RGBs.MonaLisa
+$colorYellow = $Global:RGBs.Yellow.fg
+$colorDodgerBlue = $Global:RGBs.DodgerBlue.fg
+$colorCyan = $Global:RGBs.Cyan.fg
+$colorDeepPink = $Global:RGBs.DeepPink.fg
+$colorLightSlateBlue = $Global:RGBs.LightSlateBlue.fg
+$colorMintGreen = $Global:RGBs.MintGreen.fg
+$colorMonaLisa = $Global:RGBs.MonaLisa.fg
 
 $GitPromptPrefix = '{0} [ ' -f $colorYellow
 $GitPromptInfix = '{0} | ' -f $colorYellow
@@ -146,7 +146,7 @@ function prompt {
   [void]$sb.Append($(Get-GitPrompt))
 
   # Postfix
-  [void]$sb.Append('{0}> ' -f (cr))
+  [void]$sb.Append('{0}> ' -f $Global:RGB_RESET)
 
   $sb.ToString()
 }

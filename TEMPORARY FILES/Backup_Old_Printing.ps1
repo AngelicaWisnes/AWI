@@ -230,7 +230,7 @@ function Get-ColorCharts {
   foreach ($chart in $Global:RGBChart.GetEnumerator()) {
     OUT $(PE -txt:$chart.Name)
     foreach ($color in $chart.value.fg) {
-      Write-Host ('{0}{1}' -f (cbg $color), $spaceLength)
+      Write-Host ('{0}{1}' -f $color.bg, $spaceLength)
     }
     Write-Host "`n`n"
   }
