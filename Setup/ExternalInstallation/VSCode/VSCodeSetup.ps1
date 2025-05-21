@@ -27,7 +27,7 @@ function Remove-Resource {
   Write-Info ('Resource already exists: {0}' -f (color_focus $resourceName))
 
   If (-not (Confirm-Action -Prompt "Removing resource `'$resourceName`' to create new instance")) {
-    Write-Info ('Cancelling... {0}{1} not removed' -f (color_focus $resourceName), $Global:RGB_INFO.fg )
+    Write-Cancel -additionalMessage:$('{0}{1} not removed' -f (color_focus $resourceName), $Global:RGB_FAIL.fg )
     Return $false
   }
 
@@ -49,7 +49,7 @@ function Save-Resource {
   param ([Parameter(Mandatory)][string]$resourceName, [Parameter(Mandatory)]$content)
   Write-Info ('Adding resource {0}' -f (color_focus $resourceName))
   $resourceFilePath = Join-Path -Path $RESOURCES_PATH -ChildPath "$resourceName"
-  If (-not (Remove-Resource -resourceName $resourceName)) { Return Write-Info ('Cancelling... {0}{1} not overwritten' -f (color_focus $resourceName), $Global:RGB_INFO.fg ) }
+  If (-not (Remove-Resource -resourceName $resourceName)) { Return Write-Cancel -additionalMessage:$('{0}{1} not overwritten' -f (color_focus $resourceName), $Global:RGB_FAIL.fg ) }
 
   $content | Out-File -FilePath $resourceFilePath -Force
   Confirm-ResourceCreated -resourceName $resourceName
@@ -63,7 +63,7 @@ function Copy-Resource {
   Write-Info ('Copying VS Code resource {0}' -f (color_focus $resourceName))
 
   If (-not (Test-Path -Path $resourceToCopyPath)) { Write-Fail ('Failed to copy {0}{1}, because the resource was not found' -f (color_focus $resourceName), $Global:RGB_FAIL.fg ) }
-  If (-not (Remove-Resource -resourceName $resourceName)) { Return Write-Info ('Cancelling... {0}{1} not overwritten' -f (color_focus $resourceName), $Global:RGB_INFO.fg ) }
+  If (-not (Remove-Resource -resourceName $resourceName)) { Return Write-Cancel -additionalMessage:$('{0}{1} not overwritten' -f (color_focus $resourceName), $Global:RGB_FAIL.fg ) }
 
   Write-Info ('Copying resource {0}' -f (color_focus $resourceName))
   Copy-Item -Path $resourceToCopyPath -Destination $RESOURCES_PATH -Recurse -Force

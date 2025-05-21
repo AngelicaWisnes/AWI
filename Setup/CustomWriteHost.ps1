@@ -237,5 +237,10 @@ function Write-Info {
   Write-Host ("`n{0}{1}" -f $Global:RGB_INFO.fg, $message) -NoNewline:$NoNewLine
 }
 
+function Write-Cancel {
+  param ([string]$additionalMessage = '', [switch]$NoNewLine)
+  Write-Host ("`n{0}Canceling... {1}" -f $Global:RGBs.Red.fg, $additionalMessage) -NoNewline:$NoNewLine
+}
+
 # Example usage
 # Write-Host ('This {0}is {1}a{2} test' -f $Global:RGBs.Yellow.fg, $Global:RGBs.Yellow.bg, (color_fg_bg $Global:RGBs.ElectricIndigo $Global:RGBs.Gray))

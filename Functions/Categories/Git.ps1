@@ -13,13 +13,13 @@ function Test-IsGitRepo {
 }
 
 
-function GitAddAllOrArg {
+function Invoke-GitAddAllOrArg {
   If (-not (Test-IsGitRepo)) { Return }
   If ($args.Length -eq 0) { git add . }
   Else { git add $args }
   Get-GitStatusStandard
 }
-Set-Alias a GitAddAllOrArg
+Set-Alias a Invoke-GitAddAllOrArg
 Add-ToFunctionList -category 'Git' -name 'a' -value 'git add args'
 
 
@@ -54,11 +54,16 @@ function Get-GitBranchPrefix {
 }
 
 
-function GitCreateNewBranch {
+function New-GitBranch {
   If (-not (Test-IsGitRepo)) { Return }
   Write-Initiate 'New branch creation'
+  
   $branchType = Get-GitBranchType
+  If ($null -eq $branchType) { Return }
+  
   $branchPrefix = Get-GitBranchPrefix
+  If ($null -eq $branchPrefix) { Return }
+  
   $branchNamePrefix = '{0}{1}' -f $branchType, $branchPrefix
   
   Write-Prompt "Preparing 'git checkout -b'. Please enter branch-name" -NoNewline
@@ -70,19 +75,19 @@ function GitCreateNewBranch {
 
   git checkout -b $branchName
 }
-Set-Alias gcb GitCreateNewBranch
+Set-Alias gcb New-GitBranch
 Add-ToFunctionList -category 'Git' -name 'gcb' -value 'git checkout -b'
 
 
-function GitCommit { 
+function Invoke-GitCommit { 
   If (-not (Test-IsGitRepo)) { Return }
   git commit 
 }
-Set-Alias c GitCommit
+Set-Alias c Invoke-GitCommit
 Add-ToFunctionList -category 'Git' -name 'c' -value 'git commit'
 
 
-function GitCommitWithMessage {
+function Invoke-GitCommitWithMessage {
   If (-not (Test-IsGitRepo)) { Return }
   Write-Prompt "Preparing 'git commit -m'. Please enter commit-message" -NoNewline
   Write-Info "`tMessage-length  $global:FIFTY_CHARS `n`tCommit message: " -NoNewline
@@ -92,11 +97,11 @@ function GitCommitWithMessage {
 
   git commit -m $commitMessage
 }
-Set-Alias cm GitCommitWithMessage
+Set-Alias cm Invoke-GitCommitWithMessage
 Add-ToFunctionList -category 'Git' -name 'cm' -value 'git commit -m'
 
 
-function GitCheckout {
+function Invoke-GitCheckout {
   param( [string]$argToCheckout )
   If (-not (Test-IsGitRepo)) { Return }
 
@@ -108,11 +113,11 @@ function GitCheckout {
   Write-Info ("Initializing following:`n`t{0}git checkout {1}" -f $Global:RGBs.DarkCyan.fg, $argToCheckout)
   git checkout $argToCheckout
 }
-Set-Alias co GitCheckout
+Set-Alias co Invoke-GitCheckout
 Add-ToFunctionList -category 'Git' -name 'co' -value 'git checkout args'
 
 
-function GitRebase {
+function Invoke-GitRebase {
   param( [Parameter(Mandatory)][string]$argToRebase )
   If (-not (Test-IsGitRepo)) { Return }
 
@@ -124,15 +129,15 @@ function GitRebase {
   Write-Info ("Initializing following:`n`t{0}git rebase {1}" -f $Global:RGBs.DarkCyan.fg, $argToRebase)
   git rebase $argToRebase
 }
-Set-Alias gra GitRebase
+Set-Alias gra Invoke-GitRebase
 Add-ToFunctionList -category 'Git' -name 'gra' -value 'git rebase args'
 
 
-function GitCheckoutPrevious { 
+function Invoke-GitCheckoutPrevious { 
   If (-not (Test-IsGitRepo)) { Return }
   git checkout - 
 }
-Set-Alias co- GitCheckoutPrevious
+Set-Alias co- Invoke-GitCheckoutPrevious
 Add-ToFunctionList -category 'Git' -name 'co-' -value 'git checkout -'
 
 
@@ -166,7 +171,7 @@ Set-Alias glc Get-TotalLineCountInRepo
 Add-ToFunctionList -category 'Git' -name 'glc' -value 'Get total line count in repo'
 
 
-function GitCombinePreviousCommits {
+function Invoke-GitCombineCommits {
   If (-not (Test-IsGitRepo)) { Return }
   Write-Initiate "Commit-combination with 'git reset --soft <hash>', to combine all commits done after given hash`n"
   git log -n 3
@@ -181,19 +186,19 @@ function GitCombinePreviousCommits {
 
   git reset --soft $commitHash
 
-  Write-Info "Next steps in the process: `n`t- Create the new commit(s) `n`t- Use the command GitPushForce (alias pf)"
+  Write-Info "Next steps in the process: `n`t- Create the new commit(s) `n`t- Use the command Invoke-GitPushForce (alias pf)"
 }
-Set-Alias gcpc GitCombinePreviousCommits
-Add-ToFunctionList -category 'Git' -name 'gcpc' -value 'Combine previous commits'
+Set-Alias gcc Invoke-GitCombineCommits
+Add-ToFunctionList -category 'Git' -name 'gcc' -value 'Combine previous git commits'
 
 
-function GitDeleteCurrentBranch {
+function Remove-CurrentBranch {
   If (-not (Test-IsGitRepo)) { Return }
   $currentGitBranch = Get-CurrentGitBranch
   $masterBranch = Get-MasterBranch
   If ($currentGitBranch -eq $masterBranch) { Return Write-Fail 'Cannot delete master branch' }
 
-  $title = "$(Get-FunctionDefinitionAsString GitCheckoutMaster)  git branch -d $currentGitBranch `n  git push origin --delete $currentGitBranch"
+  $title = "$(Get-FunctionDefinitionAsString Invoke-GitCheckoutMaster)  git branch -d $currentGitBranch `n  git push origin --delete $currentGitBranch"
   $question = 'Are you sure you want to proceed?'
   $choices = '&Yes', '&No'
 
@@ -202,69 +207,69 @@ function GitDeleteCurrentBranch {
 
   If ($decision -eq 0) {
     Write-Info 'Confirmed'
-    GitCheckoutMaster
+    Invoke-GitCheckoutMaster
     git branch -d $currentGitBranch
     git push origin --delete $currentGitBranch
   }
   Else { Write-Info 'Cancelled' }
 }
-Set-Alias gd GitDeleteCurrentBranch
-Add-ToFunctionList -category 'Git' -name 'gd' -value 'Delete current branch (local&remote)'
+Set-Alias rcb Remove-CurrentBranch
+Add-ToFunctionList -category 'Git' -name 'rcb' -value 'Delete current git branch (local&remote)'
 
 
-function GitMergeCurrentIntoMaster {
+function Merge-CurrentIntoMaster {
   If (-not (Test-IsGitRepo)) { Return }
   $currentBranch = Get-CurrentGitBranch
-  GitCheckoutMaster
+  Invoke-GitCheckoutMaster
   git merge $currentBranch
 }
-Set-Alias gmc GitMergeCurrentIntoMaster
+Set-Alias gmc Merge-CurrentIntoMaster
 Add-ToFunctionList -category 'Git' -name 'gmc' -value 'git merge current into master'
 
 
-function GitMergeArgs { 
+function Merge-Args { 
   If (-not (Test-IsGitRepo)) { Return }
   git merge $args 
 }
-Set-Alias gma GitMergeArgs
+Set-Alias gma Merge-Args
 Add-ToFunctionList -category 'Git' -name 'gme' -value 'git merge args'
 
 
-function GitMergeMaster {
+function Merge-Master {
   If (-not (Test-IsGitRepo)) { Return }
   $masterBranch = Get-MasterBranch
   git merge $masterBranch
 }
-Set-Alias gmm GitMergeMaster
+Set-Alias gmm Merge-Master
 Add-ToFunctionList -category 'Git' -name 'gmm' -value 'git merge master'
 
 
-function GitPull { 
+function Invoke-GitPull { 
   If (-not (Test-IsGitRepo)) { Return }
   git pull 
 }
-Set-Alias gpl GitPull
+Set-Alias gpl Invoke-GitPull
 Add-ToFunctionList -category 'Git' -name 'gpl' -value 'git pull'
 
 
-function GitPruneAndPull {
+function Invoke-GitPruneAndPull {
   If (-not (Test-IsGitRepo)) { Return }
-  GitPrune
-  GitPull
+  Invoke-GitPrune
+  Invoke-GitPull
 }
-Set-Alias gppl GitPruneAndPull
+Set-Alias gppl Invoke-GitPruneAndPull
 Add-ToFunctionList -category 'Git' -name 'gppl' -value 'git gc --prune=now && git pull'
 
 
-function GitHardReset { 
+function Reset-Hard { 
   If (-not (Test-IsGitRepo)) { Return }
   git reset --hard 
 }
-Set-Alias gr GitHardReset
+Set-Alias gr Reset-Hard
 Add-ToFunctionList -category 'Git' -name 'gr' -value 'git reset --hard'
 
 
-function GitRenameBranch {
+function Rename-Branch {
   If (-not (Test-IsGitRepo)) { Return }
   Write-Initiate 'Renaming of current branch'
   Write-Prompt 'Please enter new branch-name' -NoNewline
@@ -282,20 +287,20 @@ function GitRenameBranch {
   # Reset the upstream branch for the new-name local branch.
   git push origin -u $newBranchName
 }
-Set-Alias grb GitRenameBranch
+Set-Alias grb Rename-Branch
 Add-ToFunctionList -category 'Git' -name 'grb' -value 'Rename git branch'
 
 
-function GitCheckoutMaster {
+function Invoke-GitCheckoutMaster {
   If (-not (Test-IsGitRepo)) { Return }
   $masterBranch = Get-MasterBranch
   git checkout $masterBranch
 }
-Set-Alias m GitCheckoutMaster
+Set-Alias m Invoke-GitCheckoutMaster
 Add-ToFunctionList -category 'Git' -name 'm' -value 'git checkout master/main'
 
 
-function GitOpenBranchInBrowser {
+function Open-GitBranchInBrowser {
   param(
     [string]$repo = $(Get-CurrentRepo),
     [string]$currentGitBranch = $(Get-CurrentGitBranch)
@@ -303,7 +308,7 @@ function GitOpenBranchInBrowser {
   If (-not (Test-IsGitRepo)) { Return }
   Start-Process $global:MY_BROWSER -ArgumentList $(Get-GitBranchUrl -repo $repo -branch $currentGitBranch)
 }
-Set-Alias ob GitOpenBranchInBrowser
+Set-Alias ob Open-GitBranchInBrowser
 Add-ToFunctionList -category 'Git' -name 'ob' -value 'Open git-branch in browser'
 
 
@@ -320,32 +325,32 @@ Set-Alias gbu Get-GitBranchUrl
 Add-ToFunctionList -category 'Git' -name 'gbu' -value 'Get url for current git-branch'
 
 
-function GitPush { 
+function Invoke-GitPush { 
   If (-not (Test-IsGitRepo)) { Return }
   git push 
 }
-Set-Alias p GitPush
+Set-Alias p Invoke-GitPush
 Add-ToFunctionList -category 'Git' -name 'p' -value 'git push'
 
 
-function GitPushForce { 
+function Invoke-GitPushForce { 
   If (-not (Test-IsGitRepo)) { Return }
   git push --force-with-lease 
 }
-Set-Alias pf GitPushForce
+Set-Alias pf Invoke-GitPushForce
 Add-ToFunctionList -category 'Git' -name 'pf' -value 'git push --force-with-lease'
 
 
-function GitPushAndOpenBranchInBrowser {
+function Invoke-GitPushAndOpenBranchInBrowser {
   If (-not (Test-IsGitRepo)) { Return }
-  GitPush
-  GitOpenBranchInBrowser
+  Invoke-GitPush
+  Open-GitBranchInBrowser
 }
-Set-Alias po GitPushAndOpenBranchInBrowser
+Set-Alias po Invoke-GitPushAndOpenBranchInBrowser
 Add-ToFunctionList -category 'Git' -name 'po' -value 'git push && Open git-branch i browser'
 
 
-function GitSetUpstreamAndPush {
+function Set-GitUpstreamAndPush {
   If (-not (Test-IsGitRepo)) { Return }
   $currentGitBranch = Get-CurrentGitBranch
   $title = "`tgit push --set-upstream origin $currentGitBranch"
@@ -361,24 +366,24 @@ function GitSetUpstreamAndPush {
   }
   Else { Write-Info 'Cancelled' }
 }
-Set-Alias pu GitSetUpstreamAndPush
+Set-Alias pu Set-GitUpstreamAndPush
 Add-ToFunctionList -category 'Git' -name 'pu' -value 'git push --set-upstream origin'
 
 
-function GitPrune { 
+function Invoke-GitPrune { 
   If (-not (Test-IsGitRepo)) { Return }
   git gc --prune=now 
 }
-Set-Alias gpr GitPrune
+Set-Alias gpr Invoke-GitPrune
 Add-ToFunctionList -category 'Git' -name 'gpr' -value 'git gc --prune=now'
 
 
-function GitQuickCommitAll {
+function Invoke-GitQuickCommitAll {
   If (-not (Test-IsGitRepo)) { Return }
   git add .
   git commit -m 'Various small changes'
 }
-Set-Alias qca GitQuickCommitAll
+Set-Alias qca Invoke-GitQuickCommitAll
 Add-ToFunctionList -category 'Git' -name 'qca' -value 'Quick-Commit all'
 
 
@@ -395,10 +400,10 @@ function Invoke-GitBranchHandler {
   If (-not (Test-IsGitRepo)) { Return }
 
   $options = @(
-    [NavigableMenuElement]@{trigger = 'C'; label = 'Checkout local branch'; action = { GitChooseLocalBranch } },
-    [NavigableMenuElement]@{trigger = 'R'; label = 'Rebase local branch'; action = { GitRebaseLocalBranch } },
-    [NavigableMenuElement]@{trigger = 'D'; label = 'Delete local branches that have been deleted from remote'; action = { GitDeleteLocalBranchesDeletedFromRemote } },
-    [NavigableMenuElement]@{trigger = 'N'; label = 'Create new local branch'; action = { GitCreateNewBranch } },
+    [NavigableMenuElement]@{trigger = 'C'; label = 'Checkout branch'; action = { Invoke-GitChooseBranch } },
+    [NavigableMenuElement]@{trigger = 'R'; label = 'Rebase local branch'; action = { Invoke-GitRebaseLocalBranch } },
+    [NavigableMenuElement]@{trigger = 'D'; label = 'Delete local branches that have been deleted from remote'; action = { Remove-LocalBranchesDeletedFromRemote } },
+    [NavigableMenuElement]@{trigger = 'N'; label = 'Create new local branch'; action = { New-GitBranch } },
     [NavigableMenuElement]@{trigger = 'S'; label = 'System dependent branch handling'; action = { Get-SystemDependentGitCheckouts } }
   )
   Show-NavigableMenu -menuHeader:'Branch handling' -options:$options
@@ -407,7 +412,7 @@ Set-Alias b Invoke-GitBranchHandler
 Add-ToFunctionList -category 'Git' -name 'b' -value 'Git handle branches'
 
 
-function GitChooseLocalBranch {
+function Invoke-GitChooseBranch {
   If (-not (Test-IsGitRepo)) { Return }
 
   $localBranchNamesAsList = (git branch --format="%(refname:short)").Split("`n")
@@ -417,17 +422,33 @@ function GitChooseLocalBranch {
   $options = @()
   $localBranchNamesAsList | ForEach-Object {
     $trigger = If ($localBranchNamesAsList.IndexOf($_) -lt 10) { $localBranchNamesAsList.IndexOf($_).ToString() } Else { $null }
-    $options += [NavigableMenuElement]@{ trigger = $trigger; label = $_; action = [scriptblock]::Create("GitCheckout '$_'") }
+    $options += [NavigableMenuElement]@{ trigger = $trigger; label = $_; action = [scriptblock]::Create("Invoke-GitCheckout '$_'") }
   }
-  $options += [NavigableMenuElement]@{ trigger = 'M'; label = 'Enter branch name manually'; action = { GitCheckout } }
+  $options += [NavigableMenuElement]@{ trigger = 'R'; label = 'Choose remote branch'; action = { Invoke-GitChooseRemoteBranch } }
+  $options += [NavigableMenuElement]@{ trigger = 'M'; label = 'Enter branch name manually'; action = { Invoke-GitCheckout } }
   
-  Show-NavigableMenu -menuHeader:'Checkout local branch' -options:$options
+  Show-NavigableMenu -menuHeader:'Checkout branch' -options:$options
 }
-Set-Alias cob GitChooseLocalBranch
-Add-ToFunctionList -category 'Git' -name 'cob' -value 'Git choose local branch'
 
 
-function GitRebaseLocalBranch {
+function Invoke-GitChooseRemoteBranch {
+  If (-not (Test-IsGitRepo)) { Return }
+
+  $remoteBranchNamesAsList = (git branch -r --format="%(refname:short)").Split("`n")
+  $numberOfBranches = $remoteBranchNamesAsList.Length
+  If ($numberOfBranches -eq 0) { Return Write-Fail 'No remote branches found' }
+
+  $options = @()
+  $remoteBranchNamesAsList | ForEach-Object {
+    $options += [NavigableMenuElement]@{ trigger = $null; label = $_; action = [scriptblock]::Create("Invoke-GitCheckout '$_'") }
+  }
+  $options += [NavigableMenuElement]@{ trigger = 'M'; label = 'Enter branch name manually'; action = { Invoke-GitCheckout } }
+  
+  Show-NavigableMenu -menuHeader:'Checkout remote branch' -options:$options
+}
+
+
+function Invoke-GitRebaseLocalBranch {
   If (-not (Test-IsGitRepo)) { Return }
 
   $localBranchNamesAsList = (git branch --format="%(refname:short)").Split("`n")
@@ -437,17 +458,15 @@ function GitRebaseLocalBranch {
   $options = @()
   $localBranchNamesAsList | ForEach-Object {
     $trigger = If ($localBranchNamesAsList.IndexOf($_) -lt 10) { $localBranchNamesAsList.IndexOf($_).ToString() } Else { $null }
-    $options += [NavigableMenuElement]@{ trigger = $trigger; label = $_; action = [scriptblock]::Create("GitRebase '$_'") }
+    $options += [NavigableMenuElement]@{ trigger = $trigger; label = $_; action = [scriptblock]::Create("Invoke-GitRebase '$_'") }
   }
-  $options += [NavigableMenuElement]@{ trigger = 'M'; label = 'Enter branch name manually'; action = { GitRebase } }
+  $options += [NavigableMenuElement]@{ trigger = 'M'; label = 'Enter branch name manually'; action = { Invoke-GitRebase } }
   
   Show-NavigableMenu -menuHeader:'Rebase local branch' -options:$options
 }
-Set-Alias rlb GitRebaseLocalBranch
-Add-ToFunctionList -category 'Git' -name 'rlb' -value 'Git rebase local branch'
 
 
-function GitDeleteLocalBranchesDeletedFromRemote {
+function Remove-LocalBranchesDeletedFromRemote {
   If (-not (Test-IsGitRepo)) { Return }
   Write-Initiate 'Deletion of local branches that have been deleted from remote'
 
@@ -470,13 +489,13 @@ function GitDeleteLocalBranchesDeletedFromRemote {
     Write-Host
     $branches | ForEach-Object { git branch -D $($_) }
   }
-  Else { Write-Info 'Cancelling...' }
+  Else { Write-Cancel }
 }
-Set-Alias dlb GitDeleteLocalBranchesDeletedFromRemote
-Add-ToFunctionList -category 'Git' -name 'dlb' -value 'Git delete local branches deleted from remote'
+Set-Alias dlb Remove-LocalBranchesDeletedFromRemote
+
 
 function Get-CoverageReport {
-  param([string]$focus)
+  param([string]$focus, [switch]$onlyIncreasable = $false)
   If (-not (Test-IsGitRepo)) { Return }
   $jestOutput = pnpm jest --coverage --coverageReporters=text --silent
   
@@ -488,38 +507,46 @@ function Get-CoverageReport {
   $totalNameLength = $coverageList | ForEach-Object { $_.Matches[0].Value.Split('|')[0].Trim().Length } | Measure-Object -Maximum | Select-Object -ExpandProperty Maximum
   $numberOfSpacesToBeRemoved = $firstLineColumnLength - ($totalNameLength + 5)
 
-  $shortenedDivider = "`t|-" + ($coverageLineDivider -replace "-{$numberOfSpacesToBeRemoved}\|", '|') + '|'
-  $shortenedHeader = "`t| " + ($coverageHeader -replace " {$numberOfSpacesToBeRemoved}\|", '|') + '|'
-  $shortenedContent = $coverageList | ForEach-Object { $_ -replace " {$numberOfSpacesToBeRemoved}\|", '|' }
+  $shortDivider = "`t|-" + ($coverageLineDivider -replace "-{$numberOfSpacesToBeRemoved}\|", '|') + '|'
+  $shortHeader = "`t| " + ($coverageHeader -replace " {$numberOfSpacesToBeRemoved}\|", '|') + '|'
+  $shortContent = $coverageList | ForEach-Object { $_ -replace " {$numberOfSpacesToBeRemoved}\|", '|' }
   
   $frame = ('{0}|' -f $Global:RGBs.Jade.fg)
-  $GetElementColor = { param([string]$element) 
-    If ($element -match '100') { Return  $Global:RGBs.Jade }
-    Elseif ($focus -and $element -match $focus) { Return  $Global:RGBs.Yellow }
-    Else { Return  $Global:RGBs.DeepPink }
-  }
-
+  
   # Print the coverage report in the specified order
   $sb = [System.Text.StringBuilder]::new()
-  [void]$sb.Append(("`n{0}{1}`n{0}{2}`n{0}{3}" -f $Global:RGBs.Jade.fg, ($shortenedDivider -replace '-', '¯'), $shortenedHeader, $shortenedDivider))
-  Foreach ( $line in $shortenedContent ) {
-    $fullyCovered = ($line -split ' 100 ').Length - 1 -eq 4
+  [void]$sb.Append(("`n{0}{1}`n{0}{2}`n{0}{3}" -f $Global:RGBs.Jade.fg, ($shortDivider -replace '-', '¯'), $shortHeader, $shortDivider))
+  Foreach ( $line in $shortContent ) {
+    $lineSegments = $line.Split('|')
+    $coverageSegments = $lineSegments[1..4]
+    $isFullyCovered = ($coverageSegments | ForEach-Object { [double]$_ -gt 90 }) -notcontains $false
+    If ($onlyIncreasable) { continue }
+    $isAllFilesLine = $line -match 'All files'
+    
+    function Get-FileColor { 
+      param([string]$element) 
+      If ($focus -and $element -match $focus) { Return  $Global:RGBs.Yellow }
+      If ($isFullyCovered) { Return  $Global:RGBs.Jade }
+      If ($isAllFilesLine) { Return  $Global:RGBs.LightSlateBlue }
+      Return  $Global:RGBs.DeepPink 
+    }
+    
+    function Get-CoverageColor { 
+      param([string]$element) 
+      If ([double]$element -gt 90) { Return  $Global:RGBs.Jade }
+      If ([double]$element -lt 60) { Return  $Global:RGBs.Orange }
+      If ($isAllFilesLine) { Return  $Global:RGBs.LightSlateBlue }
+      Return  $Global:RGBs.DeepPink
+    }
     
     [void]$sb.Append(("`n`t$frame "))
-    If ( $fullyCovered) { [void]$sb.Append(('{0}{1}{2}' -f $Global:RGBs.Jade.fg, $line, $frame)) }
-    Elseif ($line -match 'All files') { 
-      $line.Split('|') | ForEach-Object { [void]$sb.Append(('{0}{1}{2}' -f $Global:RGBs.LightSlateBlue.fg, $_, $frame)) } 
-      [void]$sb.Append(("`n{0}{1}" -f $Global:RGBs.Jade.fg, $shortenedDivider))
-    }
-    Else {
-      $elements = $line.Split('|')
-      for ($i = 0; $i -lt $elements.Length; $i++) {
-        $color = If ($i -eq $elements.Length - 1) { $Global:RGBs.DeepPink } Else { $GetElementColor.Invoke($elements[$i]) }
-        [void]$sb.Append(('{0}{1}{2}' -f $color.fg, $elements[$i], $frame))
-      } 
-    }
+    [void]$sb.Append(('{0}{1}{2}' -f (Get-FileColor $lineSegments[0]).fg, $lineSegments[0], $frame))
+    $coverageSegments | ForEach-Object { [void]$sb.Append(('{0}{1}{2}' -f (Get-CoverageColor $_).fg, $_, $frame)) }
+    [void]$sb.Append(('{0}{1}{2}' -f $Global:RGBs.DeepPink.fg, $lineSegments[5], $frame))
+
+    If ($isAllFilesLine) { [void]$sb.Append(("`n{0}{1}" -f $Global:RGBs.Jade.fg, $shortDivider)) }
   }
-  [void]$sb.Append(("`n{0}{1}{2}" -f $Global:RGBs.Jade.fg, ($shortenedDivider -replace '-', '.' ), $Global:RGB_RESET))
+  [void]$sb.Append(("`n{0}{1}{2}" -f $Global:RGBs.Jade.fg, ($shortDivider -replace '-', '.' ), $Global:RGB_RESET))
 
   $sb.ToString()
 }
@@ -665,6 +692,6 @@ function Get-PackageManager {
       Return $packageManager
     }
   }
-
+  
   Write-Fail 'No package manager found in any of the package.json files'
 }
