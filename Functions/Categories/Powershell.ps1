@@ -175,9 +175,11 @@ function Show-NavigableMenu {
     [string]$menuHeader = 'Menu'
   )
   $windowWidth, $windowHeight = Get-WindowDimensions  
-  $menuHeight = @($windowHeight, 15, $options.Length | Measure-Object -Minimum).Minimum + 1
+  $menuHeight = @($windowHeight, 15, $options.Length | Measure-Object -Minimum).Minimum
   $isOnlyOneList = $menuHeight -ge $options.Length
   
+  $maxDigits = ($options.Length - 1).ToString().Length
+
   $upArrow = [char]0x2191    # ↑
   $downArrow = [char]0x2193  # ↓
   $leftArrow = If ($isOnlyOneList) { '' } Else { [char]0x2190 }  # ←
@@ -186,16 +188,15 @@ function Show-NavigableMenu {
   $lineWidth = (($options.label) | Measure-Object -Maximum -Property:Length).Maximum
   $headerLine = '=' * [Math]::Ceiling( ($lineWidth - $menuHeader.Length + 6) / 2 )
   $navigationInfo = ('{0}{1}{2}{3}' -f $leftArrow, $upArrow, $downArrow, $rightArrow)
-  $rewritableLines = "`n" * $menuHeight
-  Write-Host ("`n{0}{1} {2} {3} {1}{4}" -f $Global:RGBs.White.fg, $headerLine, $menuHeader, $navigationInfo, $rewritableLines)
-  
-  $initialCursorPosition = [System.Console]::CursorTop - $menuHeight
+  Write-Host $("`n" * ($menuHeight + 2))
+
+  $initialCursorPosition = [System.Console]::CursorTop - $menuHeight - 3
   $initialCursorSize = $Host.UI.RawUI.CursorSize
   $Host.UI.RawUI.CursorSize = 0
   
   $listStartIndex = 0
   :ListSelectionLoop while ($true) {
-    $listStopIndex = [Math]::Min($listStartIndex + $menuHeight, $options.Length - 1)
+    $listStopIndex = [Math]::Min($listStartIndex + $menuHeight - 1, $options.Length - 1)
     
     $currentOptionList = @()
     foreach ($option in $options[$listStartIndex..$listStopIndex]) { $currentOptionList += $option }
@@ -205,6 +206,10 @@ function Show-NavigableMenu {
     $currentSelection = 0
     function printMenuWithCurrentSelectionHighlighted {
       [System.Console]::SetCursorPosition(0, $initialCursorPosition)
+     
+      $indexInfo = ("({0,$maxDigits} - {1,$maxDigits} / {2,$maxDigits} | {3})" -f $listStartIndex, $listStopIndex, ($options.Length - 1), $navigationInfo)
+      Write-Host ("`n{0}{1} {2} {3} {1}" -f $Global:RGBs.White.fg, $headerLine, $menuHeader, $indexInfo)
+     
       for ($i = 0; $i -le $currentOptionListLength; $i++) {
         $option = $currentOptionList[$i]
         $label = If ($option.trigger) { "[$($option.trigger)] $($option.label)" } Else { $option.label }
@@ -216,7 +221,7 @@ function Show-NavigableMenu {
       }
     }
   
-    :outerLoop while ($true) {
+    while ($true) {
       printMenuWithCurrentSelectionHighlighted
     
       # Read user input
@@ -238,7 +243,7 @@ function Show-NavigableMenu {
             $currentSelection = $currentOptionListLength 
             break ListSelectionLoop 
           }
-          $listStartIndex = [Math]::Max(0, $listStartIndex - $menuHeight) 
+          $listStartIndex = [Math]::Max(0, $listStartIndex - $menuHeight + 1) 
           continue ListSelectionLoop
         }                                                                                               # Left arrow
         38 { $currentSelection = [Math]::Max(0, $currentSelection - 1) }                                # Up arrow
@@ -247,7 +252,7 @@ function Show-NavigableMenu {
             $currentSelection = $currentOptionListLength 
             break ListSelectionLoop 
           }
-          $listStartIndex = [Math]::Min($options.Length - $menuHeight, $listStartIndex + $menuHeight) 
+          $listStartIndex = [Math]::Min($listStartIndex + $menuHeight - 1, $options.Length - $menuHeight) 
           continue ListSelectionLoop
         }                                                                                               # Right arrow
         40 { $currentSelection = [Math]::Min($currentOptionListLength, $currentSelection + 1) }         # Down arrow
