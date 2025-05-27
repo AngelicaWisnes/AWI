@@ -434,7 +434,9 @@ function Invoke-GitChooseBranch {
 function Invoke-GitChooseRemoteBranch {
   If (-not (Test-IsGitRepo)) { Return }
 
-  $remoteBranchNamesAsList = (git branch -r --format="%(refname:short)").Split("`n")
+  $remoteBranchNamesAsList = (git branch -r --format="%(refname:short)").Split("`n") 
+  | Where-Object { $_ -ne 'origin' } 
+  | ForEach-Object { $_ -replace '^origin/', '' }
   $numberOfBranches = $remoteBranchNamesAsList.Length
   If ($numberOfBranches -eq 0) { Return Write-Fail 'No remote branches found' }
 

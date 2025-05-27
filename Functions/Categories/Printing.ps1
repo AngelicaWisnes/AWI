@@ -8,6 +8,7 @@ function Get-DadJoke {
   Else { Get-DadJoke_PowerShell5 }
 }
 Set-Alias dad Get-DadJoke
+Set-Alias daddy Get-DadJoke
 Add-ToFunctionList -category 'Printing' -name 'dad' -value 'Print random dad-joke'
 
 

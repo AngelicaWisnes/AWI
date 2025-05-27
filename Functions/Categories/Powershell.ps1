@@ -198,10 +198,10 @@ function Show-NavigableMenu {
   :ListSelectionLoop while ($true) {
     $listStopIndex = [Math]::Min($listStartIndex + $menuHeight - 1, $options.Length - 1)
     
-    $currentOptionList = @()
-    foreach ($option in $options[$listStartIndex..$listStopIndex]) { $currentOptionList += $option }
-    $currentOptionList += [NavigableMenuElement]@{label = '[Any] Cancel'; action = { return } }
-    $currentOptionListLength = $currentOptionList.Length - 1
+    $currentList = @()
+    foreach ($option in $options[$listStartIndex..$listStopIndex]) { $currentList += $option }
+    $currentList += [NavigableMenuElement]@{label = '[Any] Cancel'; action = { return } }
+    $currentListLength = $currentList.Length - 1
     
     $currentSelection = 0
     function printMenuWithCurrentSelectionHighlighted {
@@ -210,13 +210,13 @@ function Show-NavigableMenu {
       $indexInfo = ("({0,$maxDigits} - {1,$maxDigits} / {2,$maxDigits} | {3})" -f $listStartIndex, $listStopIndex, ($options.Length - 1), $navigationInfo)
       Write-Host ("`n{0}{1} {2} {3} {1}" -f $Global:RGBs.White.fg, $headerLine, $menuHeader, $indexInfo)
      
-      for ($i = 0; $i -le $currentOptionListLength; $i++) {
-        $option = $currentOptionList[$i]
+      for ($i = 0; $i -le $currentListLength; $i++) {
+        $option = $currentList[$i]
         $label = If ($option.trigger) { "[$($option.trigger)] $($option.label)" } Else { $option.label }
         $trailingSpaces = ' ' * ($windowWidth - $label.Length - 3)
 
         If ($i -eq $currentSelection) { Write-Host ('{0}>> {1}{2}' -f $Global:RGBs.Cyan.fg, $label, $trailingSpaces) }
-        Elseif ($i -eq ($currentOptionListLength)) { Write-Host ('{0}   {1}{2}' -f $Global:RGBs.Yellow.fg, $label, $trailingSpaces) }
+        Elseif ($i -eq ($currentListLength)) { Write-Host ('{0}   {1}{2}' -f $Global:RGBs.Yellow.fg, $label, $trailingSpaces) }
         Else { Write-Host ('   {0}{1}' -f $label, $trailingSpaces) }
       }
     }
@@ -228,8 +228,8 @@ function Show-NavigableMenu {
       $key = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown')
 
       # Handle trigger key selection
-      for ($i = 0; $i -le $currentOptionListLength; $i++) {
-        If ($currentOptionList[$i].trigger -and ($currentOptionList[$i].trigger -eq $key.Character.ToString().ToUpper())) { 
+      for ($i = 0; $i -le $currentListLength; $i++) {
+        If ($currentList[$i].trigger -and ($currentList[$i].trigger -eq $key.Character.ToString().ToUpper())) { 
           $currentSelection = $i
           break ListSelectionLoop
         }
@@ -240,7 +240,7 @@ function Show-NavigableMenu {
         13 { break ListSelectionLoop }                                                                  # Enter key
         37 {
           If ( $isOnlyOneList ) { 
-            $currentSelection = $currentOptionListLength 
+            $currentSelection = $currentListLength 
             break ListSelectionLoop 
           }
           $listStartIndex = [Math]::Max(0, $listStartIndex - $menuHeight + 1) 
@@ -249,15 +249,15 @@ function Show-NavigableMenu {
         38 { $currentSelection = [Math]::Max(0, $currentSelection - 1) }                                # Up arrow
         39 {
           If ( $isOnlyOneList ) { 
-            $currentSelection = $currentOptionListLength 
+            $currentSelection = $currentListLength 
             break ListSelectionLoop 
           }
           $listStartIndex = [Math]::Min($listStartIndex + $menuHeight - 1, $options.Length - $menuHeight) 
           continue ListSelectionLoop
         }                                                                                               # Right arrow
-        40 { $currentSelection = [Math]::Min($currentOptionListLength, $currentSelection + 1) }         # Down arrow
+        40 { $currentSelection = [Math]::Min($currentListLength, $currentSelection + 1) }               # Down arrow
         default {
-          $currentSelection = $currentOptionListLength 
+          $currentSelection = $currentListLength 
           break ListSelectionLoop 
         }                                                                                               # Any other key
       }
@@ -265,8 +265,8 @@ function Show-NavigableMenu {
   }
   printMenuWithCurrentSelectionHighlighted
 
-  $selectedOption = $currentOptionList[$currentSelection] 
-  If ($currentSelection -eq $currentOptionListLength) { Write-Cancel }
+  $selectedOption = $currentList[$currentSelection] 
+  If ($currentSelection -eq $currentListLength) { Write-Cancel }
   Else { Write-Host ("`n{0}Executing..." -f $Global:RGBs.Cyan.fg) }
   
   $Host.UI.RawUI.CursorSize = $initialCursorSize
