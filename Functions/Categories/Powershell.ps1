@@ -169,6 +169,22 @@ Set-Alias snp Start-NewPowershell
 Add-ToFunctionList -category 'PowerShell' -name 'snp' -value 'Start new powershell'
 
 
+function Get-IndexInfo {
+  param (
+    [Parameter(mandatory)][int]$start, 
+    [Parameter(mandatory)][int]$stop, 
+    [Parameter(mandatory)][int]$length, 
+    [Parameter(mandatory)][bool]$isOnlyOneList
+  )
+  $maxDigits = $length.ToString().Length
+  $upArrow = [char]0x2191    # ↑
+  $downArrow = [char]0x2193  # ↓
+  $leftArrow = If ($isOnlyOneList) { '' } Else { [char]0x2190 }  # ←
+  $rightArrow = If ($isOnlyOneList) { '' } Else { [char]0x2192 } # →
+
+  return "({0,$maxDigits} - {1,$maxDigits} / {2,$maxDigits} | {3}{4}{5}{6})" -f $start, $stop, $length, $leftArrow, $upArrow, $downArrow, $rightArrow 
+}
+
 function Show-NavigableMenu {
   param ( 
     [Parameter(mandatory)][array]$options,
@@ -176,23 +192,18 @@ function Show-NavigableMenu {
   )
   $windowWidth, $windowHeight = Get-WindowDimensions  
   $menuHeight = @($windowHeight, 15, $options.Length | Measure-Object -Minimum).Minimum
-  $isOnlyOneList = $menuHeight -ge $options.Length
-  
-  $maxDigits = ($options.Length - 1).ToString().Length
+  $isOnlyOneList = $menuHeight -ge $options.Length  
+  $headerWidth = [Math]::Min((($options.label) | Measure-Object -Maximum -Property:Length).Maximum + 10, $windowWidth)
 
-  $upArrow = [char]0x2191    # ↑
-  $downArrow = [char]0x2193  # ↓
-  $leftArrow = If ($isOnlyOneList) { '' } Else { [char]0x2190 }  # ←
-  $rightArrow = If ($isOnlyOneList) { '' } Else { [char]0x2192 } # →
-
-  $lineWidth = (($options.label) | Measure-Object -Maximum -Property:Length).Maximum
-  $headerLine = '=' * [Math]::Ceiling( ($lineWidth - $menuHeader.Length + 6) / 2 )
-  $navigationInfo = ('{0}{1}{2}{3}' -f $leftArrow, $upArrow, $downArrow, $rightArrow)
   Write-Host $("`n" * ($menuHeight + 2))
 
   $initialCursorPosition = [System.Console]::CursorTop - $menuHeight - 3
   $initialCursorSize = $Host.UI.RawUI.CursorSize
   $Host.UI.RawUI.CursorSize = 0
+  function EarlyCancel {
+    $Host.UI.RawUI.CursorSize = $initialCursorSize
+    Write-Cancel
+  }
   
   $listStartIndex = 0
   :ListSelectionLoop while ($true) {
@@ -206,18 +217,16 @@ function Show-NavigableMenu {
     $currentSelection = 0
     function printMenuWithCurrentSelectionHighlighted {
       [System.Console]::SetCursorPosition(0, $initialCursorPosition)
-     
-      $indexInfo = ("({0,$maxDigits} - {1,$maxDigits} / {2,$maxDigits} | {3})" -f $listStartIndex, $listStopIndex, ($options.Length - 1), $navigationInfo)
-      Write-Host ("`n{0}{1} {2} {3} {1}" -f $Global:RGBs.White.fg, $headerLine, $menuHeader, $indexInfo)
+      $indexInfo = Get-IndexInfo -start:$listStartIndex -stop:$listStopIndex -length:($options.Length - 1) -isOnlyOneList:$isOnlyOneList
+      Write-LinedHeader -message:" $menuHeader $indexInfo " -maxWidth:$headerWidth
      
       for ($i = 0; $i -le $currentListLength; $i++) {
         $option = $currentList[$i]
         $label = If ($option.trigger) { "[$($option.trigger)] $($option.label)" } Else { $option.label }
-        $trailingSpaces = ' ' * ($windowWidth - $label.Length - 3)
 
-        If ($i -eq $currentSelection) { Write-Host ('{0}>> {1}{2}' -f $Global:RGBs.Cyan.fg, $label, $trailingSpaces) }
-        Elseif ($i -eq ($currentListLength)) { Write-Host ('{0}   {1}{2}' -f $Global:RGBs.Yellow.fg, $label, $trailingSpaces) }
-        Else { Write-Host ('   {0}{1}' -f $label, $trailingSpaces) }
+        If ($i -eq $currentSelection) { Write-Host ('{0}>> {1}' -f $Global:RGBs.Cyan.fg, $label).PadRight($windowWidth) }
+        Elseif ($i -eq ($currentListLength)) { Write-Host ('{0}   {1}' -f $Global:RGBs.Yellow.fg, $label).PadRight($windowWidth) }
+        Else { Write-Host ('   {0}' -f $label).PadRight($windowWidth) }
       }
     }
   
@@ -239,27 +248,18 @@ function Show-NavigableMenu {
       switch ($key.VirtualKeyCode) {
         13 { break ListSelectionLoop }                                                                  # Enter key
         37 {
-          If ( $isOnlyOneList ) { 
-            $currentSelection = $currentListLength 
-            break ListSelectionLoop 
-          }
+          If ( $isOnlyOneList ) { Return EarlyCancel }
           $listStartIndex = [Math]::Max(0, $listStartIndex - $menuHeight + 1) 
           continue ListSelectionLoop
         }                                                                                               # Left arrow
         38 { $currentSelection = [Math]::Max(0, $currentSelection - 1) }                                # Up arrow
         39 {
-          If ( $isOnlyOneList ) { 
-            $currentSelection = $currentListLength 
-            break ListSelectionLoop 
-          }
+          If ( $isOnlyOneList ) { Return EarlyCancel }
           $listStartIndex = [Math]::Min($listStartIndex + $menuHeight - 1, $options.Length - $menuHeight) 
           continue ListSelectionLoop
         }                                                                                               # Right arrow
         40 { $currentSelection = [Math]::Min($currentListLength, $currentSelection + 1) }               # Down arrow
-        default {
-          $currentSelection = $currentListLength 
-          break ListSelectionLoop 
-        }                                                                                               # Any other key
+        default { Return EarlyCancel }                                                                  # Any other key
       }
     }
   }

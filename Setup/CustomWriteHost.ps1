@@ -217,6 +217,16 @@ function Write-Initiate {
   Write-Host ("`n{0}Initiating - {1}" -f $Global:RGB_INIT.fg, $message) -NoNewline:$NoNewLine
 }
 
+function Write-LinedHeader {
+  param ([Parameter(Mandatory)][string]$message, [char]$padChar = '=', [int]$maxWidth, [switch]$NoNewLine)
+  $windowWidth, $_ = Get-WindowDimensions  
+  $messageLength = $message.Length
+  $width = [Math]::Min([Math]::Max($maxWidth, $messageLength + 14 ), $windowWidth) 
+  $linedHeader = $message.PadLeft(($messageLength + ($width - $messageLength) / 2), $padChar).PadRight($width, $padChar)
+
+  Write-Host ("`n{0}{1}" -f $Global:RGB_INIT.fg, $linedHeader) -NoNewline:$NoNewLine
+}
+
 function Write-Prompt {
   param ([Parameter(Mandatory)][string]$message, [switch]$NoNewLine)
   Write-Host ('{0}{1}' -f $Global:RGB_PROMPT.fg, $message) -NoNewline:$NoNewLine
