@@ -13,12 +13,6 @@ $GitPromptPostfix = '{0} ] ' -f $colorYellow
 $GitUpstreamPrefix = '{0}(' -f $colorDodgerBlue
 $GitUpstreamPostfix = '{0})' -f $colorDodgerBlue
 
-$upArrow = [char]0x2191  # Up arrow
-$downArrow = [char]0x2193  # Down arrow
-$checkMark = [char]0x2714  # CheckMark
-$warning = [char]0x26A0  # Warning sign
-
-
 function Get-FormattedPath {
   $pathDivider = [System.IO.Path]::DirectorySeparatorChar
   $formattedPath = ($pwd.Path -replace '.*Source', "${pathDivider}Source")
@@ -103,12 +97,12 @@ function Get-GitPrompt {
 
   # GitPrompt Pull information
   If ( $commitsToPull -gt 0 ) {
-    [void]$sb.Append($GitPromptInfix + $colorDeepPink + $downArrow + ' ' + $commitsToPull)
+    [void]$sb.Append($GitPromptInfix + $colorDeepPink + $Global:downArrow + ' ' + $commitsToPull)
   }
 
   # GitPrompt Push information
   If ( $commitsToPush -gt 0 ) {
-    [void]$sb.Append($GitPromptInfix + $colorLightSlateBlue + $upArrow + ' ' + $commitsToPush)
+    [void]$sb.Append($GitPromptInfix + $colorLightSlateBlue + $Global:upArrow + ' ' + $commitsToPush)
   }
 
   # GitPrompt Staged information
@@ -116,7 +110,7 @@ function Get-GitPrompt {
   $stagedChanged = $stagedStatus['~']
   $stagedDeleted = $stagedStatus['-']
   If ( ($stagedAdded -gt 0) -or ($stagedChanged -gt 0) -or ($stagedDeleted -gt 0) ) {
-    [void]$sb.Append($GitPromptInfix + $colorMintGreen + $checkMark + '  +' + $stagedAdded + ' ~' + $stagedChanged + ' -' + $stagedDeleted)
+    [void]$sb.Append($GitPromptInfix + $colorMintGreen + $Global:checkMark + '  +' + $stagedAdded + ' ~' + $stagedChanged + ' -' + $stagedDeleted)
   }
 
   # GitPrompt Unstaged information
@@ -124,7 +118,7 @@ function Get-GitPrompt {
   $unstagedChanged = $unstagedStatus['~']
   $unstagedDeleted = $unstagedStatus['-']
   If ( ($unstagedAdded -gt 0) -or ($unstagedChanged -gt 0) -or ($unstagedDeleted -gt 0) ) {
-    [void]$sb.Append($GitPromptInfix + $colorMonaLisa + $warning + '  +' + $unstagedAdded + ' ~' + $unstagedChanged + ' -' + $unstagedDeleted)
+    [void]$sb.Append($GitPromptInfix + $colorMonaLisa + $Global:warningSign + '  +' + $unstagedAdded + ' ~' + $unstagedChanged + ' -' + $unstagedDeleted)
   }
 
   # GitPrompt Postfix

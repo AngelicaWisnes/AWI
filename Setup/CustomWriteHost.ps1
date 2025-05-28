@@ -218,11 +218,10 @@ function Write-Initiate {
 }
 
 function Write-LinedHeader {
-  param ([Parameter(Mandatory)][string]$message, [char]$padChar = '=', [int]$maxWidth, [switch]$NoNewLine)
+  param ([Parameter(Mandatory)][string]$message, [char]$padChar = '=', [switch]$NoNewLine)
   $windowWidth, $_ = Get-WindowDimensions  
-  $messageLength = $message.Length
-  $width = [Math]::Min([Math]::Max($maxWidth, $messageLength + 14 ), $windowWidth) 
-  $linedHeader = $message.PadLeft(($messageLength + ($width - $messageLength) / 2), $padChar).PadRight($width, $padChar)
+  $width = [Math]::Min(120, $windowWidth) 
+  $linedHeader = $message.PadLeft(($message.Length + ($width - $message.Length) / 2), $padChar).PadRight($width, $padChar)
 
   Write-Host ("`n{0}{1}" -f $Global:RGB_INIT.fg, $linedHeader) -NoNewline:$NoNewLine
 }

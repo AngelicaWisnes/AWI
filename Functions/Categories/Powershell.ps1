@@ -169,31 +169,31 @@ Set-Alias snp Start-NewPowershell
 Add-ToFunctionList -category 'PowerShell' -name 'snp' -value 'Start new powershell'
 
 
-function Get-IndexInfo {
-  param (
-    [Parameter(mandatory)][int]$start, 
-    [Parameter(mandatory)][int]$stop, 
-    [Parameter(mandatory)][int]$length, 
-    [Parameter(mandatory)][bool]$isOnlyOneList
-  )
-  $maxDigits = $length.ToString().Length
-  $upArrow = [char]0x2191    # ↑
-  $downArrow = [char]0x2193  # ↓
-  $leftArrow = If ($isOnlyOneList) { '' } Else { [char]0x2190 }  # ←
-  $rightArrow = If ($isOnlyOneList) { '' } Else { [char]0x2192 } # →
-
-  return "({0,$maxDigits} - {1,$maxDigits} / {2,$maxDigits} | {3}{4}{5}{6})" -f $start, $stop, $length, $leftArrow, $upArrow, $downArrow, $rightArrow 
-}
 
 function Show-NavigableMenu {
   param ( 
     [Parameter(mandatory)][array]$options,
     [string]$menuHeader = 'Menu'
   )
-  $windowWidth, $windowHeight = Get-WindowDimensions  
+  $windowWidth, $windowHeight = Get-WindowDimensions 
+  $longestOptionLength = (($options.label) | Measure-Object -Maximum -Property:Length).Maximum
+  If ($longestOptionLength -gt $windowWidth) {
+    Return Write-Fail 'The longest option label is longer than the window width. Please adjust the options or increase the window size.'
+  }
+
   $menuHeight = @($windowHeight, 15, $options.Length | Measure-Object -Minimum).Minimum
   $isOnlyOneList = $menuHeight -ge $options.Length  
-  $headerWidth = [Math]::Min((($options.label) | Measure-Object -Maximum -Property:Length).Maximum + 10, $windowWidth)
+    
+  function Get-IndexInfo {
+    param ([int]$start, [int]$stop)
+    $maxDigits = ($options.Length - 1).ToString().Length
+    $left = If ($isOnlyOneList) { '' } Else { $Global:leftArrow } 
+    $right = If ($isOnlyOneList) { '' } Else { $Global:rightArrow }
+    
+    return "({0,$maxDigits} - {1,$maxDigits} / {2,$maxDigits} | {3}{4}{5}{6})" -f $start, $stop, 
+      ($options.Length - 1), $left, $Global:upArrow, $Global:downArrow, $right 
+  }
+
 
   Write-Host $("`n" * ($menuHeight + 2))
 
@@ -217,8 +217,8 @@ function Show-NavigableMenu {
     $currentSelection = 0
     function printMenuWithCurrentSelectionHighlighted {
       [System.Console]::SetCursorPosition(0, $initialCursorPosition)
-      $indexInfo = Get-IndexInfo -start:$listStartIndex -stop:$listStopIndex -length:($options.Length - 1) -isOnlyOneList:$isOnlyOneList
-      Write-LinedHeader -message:" $menuHeader $indexInfo " -maxWidth:$headerWidth
+      $indexInfo = Get-IndexInfo -start:$listStartIndex -stop:$listStopIndex
+      Write-LinedHeader -message:" $menuHeader $indexInfo "
      
       for ($i = 0; $i -le $currentListLength; $i++) {
         $option = $currentList[$i]
